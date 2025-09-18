@@ -13,28 +13,28 @@ async function fetchQuote(symbol) {
   try {
     console.log(`\n--- Fetching ${symbol} ---`);
     const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
-    
+
     const res = await axios.get(url);
     console.log(`${symbol} HTTP Status:`, res.status);
     console.log(`${symbol} Raw Response:`, JSON.stringify(res.data, null, 2));
-    
+
     const data = res.data;
-    
+
     // Check for API errors
     if (data.error) {
       console.log(`${symbol} API Error:`, data.error);
       return null;
     }
-    
+
     // Check if we have required fields
     if (!data.c || !data.pc || data.c === 0 || data.pc === 0) {
       console.log(`${symbol} Invalid data - Current: ${data.c}, Previous: ${data.pc}`);
       return null;
     }
-    
+
     const percentChange = ((data.c - data.pc) / data.pc) * 100;
     const change = data.c - data.pc;
-    
+
     const result = {
       symbol: symbol,
       price: data.c,
@@ -42,10 +42,10 @@ async function fetchQuote(symbol) {
       percentChange: percentChange,
       previousClose: data.pc
     };
-    
+
     console.log(`${symbol} Processed:`, result);
     return result;
-    
+
   } catch (err) {
     console.error(`${symbol} Error:`, err.message);
     if (err.response) {
@@ -59,16 +59,16 @@ async function fetchQuote(symbol) {
 // GET /api/stocks/trending
 router.get('/trending', async (req, res) => {
   try {
-    
+
     const results = [];
-    
+
     // Fetch quotes with delays
     for (let i = 0; i < symbols.length; i++) {
       const quote = await fetchQuote(symbols[i]);
       if (quote) {
         results.push(quote);
       }
-      
+
       // Add delay between requests
       if (i < symbols.length - 1) {
         console.log('Waiting 200ms...');
@@ -78,7 +78,7 @@ router.get('/trending', async (req, res) => {
 
     if (results.length === 0) {
       console.log('No valid results - returning error');
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'No stock data available',
         debug: {
           symbolsAttempted: symbols.length,
@@ -98,8 +98,8 @@ router.get('/trending', async (req, res) => {
       .sort((a, b) => a.percentChange - b.percentChange)
       .slice(0, 5);
 
-    res.json({ 
-      gainers, 
+    res.json({
+      gainers,
       losers,
       debug: {
         totalSymbols: symbols.length,
@@ -110,9 +110,9 @@ router.get('/trending', async (req, res) => {
 
   } catch (err) {
     console.error('Error in /trending:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch trending stocks',
-      message: err.message 
+      message: err.message
     });
   }
 });
@@ -121,9 +121,9 @@ router.get('/trending', async (req, res) => {
 router.get('/test/:symbol', async (req, res) => {
   const { symbol } = req.params;
   console.log(`\n=== Testing single symbol: ${symbol} ===`);
-  
+
   const result = await fetchQuote(symbol.toUpperCase());
-  
+
   res.json({
     symbol: symbol,
     result: result,
@@ -141,6 +141,21 @@ router.get('/health', (req, res) => {
     symbols: symbols,
     timestamp: new Date().toISOString()
   });
+});
+
+router.get('/predict/:ticker', async (req, res) => {
+  const { ticker } = req.params;
+  const { target, days } = req.query;
+
+  try {
+    const response = await axios.get(`http://localhost:8000/predict/${ticker}`, {
+      params: { target: target || "Daily Change %", days: days || 5 }
+    });
+    console.log('Prediction response:', response.data)
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: "Prediction service unavailable", details: err.message });
+  }
 });
 
 module.exports = router;

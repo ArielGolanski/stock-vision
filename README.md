@@ -68,3 +68,19 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# Getting started with prediction API
+
+
+Run the notebook server\ml\MSFT_Model_Daily_Monthly.ipynb
+
+```bash
+
+cd server/ml
+Uvicorn running on http://127.0.0.1:8000
+
+
+```
+
+Run the server and send GET request. For example:
+`http://localhost:5001/api/stocks/predict/MSFT?target=Monthly%20Change%20%25&days=5`
