@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TrendingStocks from '../components/TrendingStocks';
 import logo from '../assets/logo.png'; // adjust path if needed
 import StocksDashboard from '../components/StocksDashboard';
+import HeaderMenu from '../components/HeaderMenu';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const Dashboard = () => {
 
   return (
     <div>
+      <HeaderMenu />
       {/* Header */}
       <header
         style={{
