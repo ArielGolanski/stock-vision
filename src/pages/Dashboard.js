@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TrendingStocks from '../components/TrendingStocks';
 import logo from '../assets/logo.png'; // adjust path if needed
+import StocksDashboard from '../components/StocksDashboard';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -44,41 +45,42 @@ const Dashboard = () => {
 
   return (
     <div>
-  {/* Header */}
-  <header
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '10px 20px',
-      borderBottom: '1px solid #ddd',
-    }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-      <img src={logo} alt="Logo" style={{ width: '30px', height: '30px' }} />
-      <h1 style={{ margin: 0 }}>StockVision</h1>
-    </div>
-    <button
-      onClick={handleLogout}
-      style={{ padding: '5px 10px', fontSize: '16px' }}
-    >
-      Logout
-    </button>
-  </header>
+      {/* Header */}
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '10px 20px',
+          borderBottom: '1px solid #ddd',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src={logo} alt="Logo" style={{ width: '30px', height: '30px' }} />
+          <h1 style={{ margin: 0 }}>StockVision</h1>
+        </div>
+        <button
+          onClick={handleLogout}
+          style={{ padding: '5px 10px', fontSize: '16px' }}
+        >
+          Logout
+        </button>
+      </header>
 
-  {/* Main content + Trending Stocks container */}
-  <div style={{ display: 'flex', marginTop: '10px', padding: '0 20px' }}>
-    {/* Left side: Main content */}
-    <main style={{ flex: 1 }}>
-      {userName && <h2>Welcome, {userName}!</h2>}
-    </main>
+      {/* Main content + Trending Stocks container */}
+      <div style={{ display: 'flex', marginTop: '10px', padding: '0 20px' }}>
+        {/* Left side: Main content */}
+        <main style={{ flex: 1 }}>
+          {userName && <h2>Welcome, {userName}!</h2>}
+          <StocksDashboard />
+        </main>
 
-    {/* Right side: Trending Stocks */}
-    <div style={{ width: '320px'}}>
-      <TrendingStocks />
+        {/* Right side: Trending Stocks */}
+        <div style={{ width: '320px' }}>
+          <TrendingStocks />
+        </div>
+      </div>
     </div>
-  </div>
-</div>
   );
 };
 

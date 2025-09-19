@@ -11,12 +11,12 @@ const symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'AVGO'
 // Helper to fetch quote from Finnhub with detailed logging
 async function fetchQuote(symbol) {
   try {
-    console.log(`\n--- Fetching ${symbol} ---`);
+    // console.log(`\n--- Fetching ${symbol} ---`);
     const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`;
 
     const res = await axios.get(url);
-    console.log(`${symbol} HTTP Status:`, res.status);
-    console.log(`${symbol} Raw Response:`, JSON.stringify(res.data, null, 2));
+    // console.log(`${symbol} HTTP Status:`, res.status);
+    // console.log(`${symbol} Raw Response:`, JSON.stringify(res.data, null, 2));
 
     const data = res.data;
 
@@ -43,7 +43,7 @@ async function fetchQuote(symbol) {
       previousClose: data.pc
     };
 
-    console.log(`${symbol} Processed:`, result);
+    // console.log(`${symbol} Processed:`, result);
     return result;
 
   } catch (err) {
@@ -71,7 +71,7 @@ router.get('/trending', async (req, res) => {
 
       // Add delay between requests
       if (i < symbols.length - 1) {
-        console.log('Waiting 200ms...');
+        // console.log('Waiting 200ms...');
         await new Promise(resolve => setTimeout(resolve, 200));
       }
     }

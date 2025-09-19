@@ -19,11 +19,15 @@ mongoose.connect(process.env.CONNECTION_STRING)
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Routes
-const userRoutes = require('./routes/user'); 
-app.use('/api/users', userRoutes);          
+const userRoutes = require('./routes/user');
+app.use('/api/users', userRoutes);
 
 const stocksRoutes = require('./routes/stocks');
 app.use('/api/stocks', stocksRoutes);
+
+// server/app.js (snippet to add)
+const stockHistoryRoutes = require('./routes/stockHistory');
+app.use('/api/stock-history', stockHistoryRoutes);
 
 
 // Optional: root route to check server

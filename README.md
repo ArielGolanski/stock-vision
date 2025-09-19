@@ -77,7 +77,7 @@ Run the notebook server\ml\MSFT_Model_Daily_Monthly.ipynb
 ```bash
 
 cd server/ml
-Uvicorn running on http://127.0.0.1:8000
+uvicorn ml_service:app --reload --port 8000
 
 
 ```
