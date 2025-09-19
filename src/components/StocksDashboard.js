@@ -63,10 +63,11 @@ export default function StocksDashboard() {
         const hist = dataPayload.history || [];
         const preds = dataPayload.predictions || [];
 
+        // Historical data
         const histData = hist.map(h => ({ x: h.date, y: h.close }));
-        const predData = Array(hist.length).fill(null).concat(
-            preds.map(p => ({ x: p.date, y: p.predicted_close }))
-        );
+
+        // Predictions should continue after history
+        const predData = preds.map(p => ({ x: p.date, y: p.predicted_close }));
 
         return {
             datasets: [
@@ -80,7 +81,7 @@ export default function StocksDashboard() {
                 },
                 {
                     label: 'Predicted Close',
-                    data: predData,
+                    data: [...histData.slice(-1), ...predData], // start from last hist point
                     tension: 0.2,
                     pointRadius: 4,
                     borderWidth: 2,
@@ -90,6 +91,7 @@ export default function StocksDashboard() {
             ]
         };
     }, [dataPayload]);
+
 
     const chartOptions = {
         responsive: true,
