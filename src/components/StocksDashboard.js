@@ -14,7 +14,6 @@ import {
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { useTheme } from "./ThemeContext";
-import stockInfo from "./stockInfo";
 
 ChartJS.register(
     CategoryScale,
@@ -28,20 +27,72 @@ ChartJS.register(
 );
 
 export default function StocksDashboard() {
+    const { darkMode } = useTheme();
+
     const [ticker, setTicker] = useState("MSFT");
     const [range, setRange] = useState("1y");
     const [predictionType, setPredictionType] = useState("daily");
     const [dataPayload, setDataPayload] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [rangeChanges, setRangeChanges] = useState({});
 
-    const { darkMode } = useTheme();
+    const ranges = [
+        { value: "1d", label: "1D", days: 1 },
+        { value: "5d", label: "5D", days: 5 },
+        { value: "1mo", label: "1M", days: 21 }, // ~21 trading days
+        { value: "6mo", label: "6M", days: 126 }, // ~21*6
+        { value: "1y", label: "1Y", days: 252 }, // ~252 trading days
+        { value: "5y", label: "5Y", days: 1260 },
+        { value: "10y", label: "10Y", days: 2520 },
+    ];
+
+    // Stock descriptions & key stats (static mockup — ideally from API)
+    const stockInfo = {
+        MSFT: {
+            name: "Microsoft Corporation",
+            description:
+                "Microsoft develops, licenses, and supports software, services, devices, and solutions worldwide. Its segments include Productivity and Business Processes, Intelligent Cloud, and More Personal Computing.",
+            stats: {
+                "Market Cap": "3.0T",
+                "P/E Ratio": "35.6",
+                "Dividend Yield": "0.8%",
+                "52W Range": "280.00 - 420.00",
+            },
+        },
+        T: {
+            name: "AT&T Inc.",
+            description:
+                "AT&T provides telecommunications, media, and technology services. It offers wireless communications, broadband, pay television, and digital entertainment services globally.",
+            stats: {
+                "Market Cap": "120B",
+                "P/E Ratio": "7.9",
+                "Dividend Yield": "5.8%",
+                "52W Range": "13.00 - 20.00",
+            },
+        },
+        IBM: {
+            name: "International Business Machines",
+            description:
+                "IBM provides integrated solutions and services worldwide. It operates in Cloud & Cognitive Software, Global Business Services, Systems, and Global Financing.",
+            stats: {
+                "Market Cap": "170B",
+                "P/E Ratio": "22.1",
+                "Dividend Yield": "4.5%",
+                "52W Range": "115.00 - 175.00",
+            },
+        },
+    };
 
     async function fetchData() {
         setLoading(true);
         setError(null);
         try {
-            const params = new URLSearchParams({ ticker, range, predictionType });
+            const params = new URLSearchParams({
+                ticker,
+                range,
+                predictionType,
+            });
             const resp = await fetch(
                 `http://localhost:5001/api/stock-history?${params.toString()}`
             );
@@ -51,6 +102,21 @@ export default function StocksDashboard() {
             }
             const json = await resp.json();
             setDataPayload(json);
+
+            // Compute % changes for ALL ranges
+            if (json.history && json.history.length > 1) {
+                const closes = json.history.map((h) => h.close);
+                const newChanges = {};
+                ranges.forEach((r) => {
+                    if (closes.length > r.days) {
+                        const pastPrice = closes[closes.length - r.days] ?? closes[0];
+                        const lastPrice = closes[closes.length - 1];
+                        const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
+                        newChanges[r.value] = pct;
+                    }
+                });
+                setRangeChanges(newChanges);
+            }
         } catch (err) {
             setError(err.message);
             setDataPayload(null);
@@ -60,11 +126,12 @@ export default function StocksDashboard() {
     }
 
     useEffect(() => {
-        fetchData();
+        (async () => {
+            await fetchData();
+        })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ticker, range, predictionType]);
 
-    // Chart data
     const chartData = useMemo(() => {
         if (!dataPayload) return null;
         const hist = dataPayload.history || [];
@@ -81,20 +148,20 @@ export default function StocksDashboard() {
                     tension: 0.2,
                     pointRadius: 2,
                     borderWidth: 2,
-                    borderColor: darkMode ? "#4CC9F0" : "#2185D0",
+                    borderColor: "rgba(33, 133, 208, 1)",
                 },
                 {
                     label: "Predicted Close",
                     data: [...histData.slice(-1), ...predData],
                     tension: 0.2,
-                    pointRadius: 5,
+                    pointRadius: 4,
                     borderWidth: 2,
-                    borderDash: [6, 6],
-                    borderColor: darkMode ? "#F72585" : "#DC4E41",
+                    borderDash: [8, 6],
+                    borderColor: "rgba(220, 78, 65, 1)",
                 },
             ],
         };
-    }, [dataPayload, darkMode]);
+    }, [dataPayload]);
 
     const chartOptions = {
         responsive: true,
@@ -109,153 +176,147 @@ export default function StocksDashboard() {
                     },
                 },
             },
-            legend: {
-                position: "top",
-                labels: { color: darkMode ? "#f1f1f1" : "#111" },
-            },
+            legend: { position: "top" },
         },
         scales: {
             x: {
                 type: "time",
                 time: { unit: "day", tooltipFormat: "PPP" },
-                ticks: { color: darkMode ? "#ddd" : "#333" },
-                grid: { color: darkMode ? "#444" : "#eee" },
+                grid: { color: darkMode ? "#444" : "#ddd" },
             },
             y: {
                 beginAtZero: false,
-                ticks: { color: darkMode ? "#ddd" : "#333" },
-                grid: { color: darkMode ? "#444" : "#eee" },
+                grid: { color: darkMode ? "#444" : "#ddd" },
             },
         },
     };
 
-    // Calculate % changes for range cards
-    function calculateChange(hist, periodDays) {
-        if (!hist.length) return null;
-        const last = hist[hist.length - 1].close;
-        let ref;
-
-        if (periodDays === "All") {
-            ref = hist[0].close;
-        } else if (periodDays === "YTD") {
-            const yearStart = new Date(new Date().getFullYear(), 0, 1);
-            const refEntry = hist.find((h) => new Date(h.date) >= yearStart);
-            ref = refEntry ? refEntry.close : hist[0].close;
-        } else {
-            const days =
-                periodDays === "1d"
-                    ? 1
-                    : periodDays === "5d"
-                        ? 5
-                        : periodDays === "1m"
-                            ? 21
-                            : periodDays === "6m"
-                                ? 126
-                                : periodDays === "1y"
-                                    ? 252
-                                    : periodDays === "5y"
-                                        ? 252 * 5
-                                        : hist.length;
-            const idx = Math.max(0, hist.length - days - 1);
-            ref = hist[idx].close;
-        }
-
-        return ((last - ref) / ref) * 100;
-    }
-
-    const ranges = ["1d", "5d", "1m", "6m", "1y", "5y", "YTD", "All"];
-    const hist = dataPayload?.history || [];
-
     return (
         <div
             style={{
-                minHeight: "100vh",
-                backgroundColor: darkMode ? "#1e1e1e" : "#f9f9f9",
-                color: darkMode ? "#f1f1f1" : "#111",
                 padding: 20,
+                background: darkMode ? "#121212" : "#fafafa",
+                color: darkMode ? "#f1f1f1" : "#111",
+                minHeight: "100vh",
             }}
         >
-            <h2>
-                {stockInfo[ticker].name} ({ticker})
-            </h2>
+            <h2 style={{ marginBottom: 20 }}>Stocks Dashboard</h2>
 
-            {/* Range Cards */}
+            {/* Stock Info */}
+            <div
+                style={{
+                    marginBottom: 20,
+                    padding: 16,
+                    borderRadius: 8,
+                    background: darkMode ? "#1e1e1e" : "#fff",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                }}
+            >
+                <h3>{stockInfo[ticker].name}</h3>
+                <p style={{ fontSize: "0.9em", opacity: 0.85 }}>
+                    {stockInfo[ticker].description}
+                </p>
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                        gap: 10,
+                        marginTop: 10,
+                    }}
+                >
+                    {Object.entries(stockInfo[ticker].stats).map(([key, val]) => (
+                        <div
+                            key={key}
+                            style={{
+                                padding: "8px 10px",
+                                borderRadius: 6,
+                                background: darkMode ? "#2a2a2a" : "#f5f5f5",
+                            }}
+                        >
+                            <div style={{ fontSize: "0.8em", opacity: 0.7 }}>{key}</div>
+                            <div style={{ fontWeight: "bold" }}>{val}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Ticker selector */}
+            <div style={{ marginBottom: 16 }}>
+                <select
+                    value={ticker}
+                    onChange={(e) => setTicker(e.target.value)}
+                    style={{ padding: "6px 10px", borderRadius: 6 }}
+                >
+                    <option value="MSFT">Microsoft</option>
+                    <option value="T">AT&T</option>
+                    <option value="IBM">IBM</option>
+                </select>
+            </div>
+
+            {/* Range cubes */}
             <div
                 style={{
                     display: "flex",
-                    flexWrap: "wrap",
-                    gap: 12,
+                    gap: 8,
                     marginBottom: 20,
+                    flexWrap: "wrap",
                 }}
             >
                 {ranges.map((r) => {
-                    const change = calculateChange(hist, r);
-                    if (change == null) return null;
-                    const isPositive = change >= 0;
+                    const pct = rangeChanges[r.value];
+                    const pctText =
+                        pct !== undefined
+                            ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`
+                            : "...";
                     return (
                         <div
-                            key={r}
+                            key={r.value}
+                            onClick={() => setRange(r.value)}
                             style={{
-                                flex: "1 0 100px",
-                                padding: "12px",
+                                cursor: "pointer",
+                                padding: "10px 14px",
                                 borderRadius: "8px",
+                                minWidth: "70px",
                                 textAlign: "center",
-                                background: darkMode ? "#2b2b2b" : "#fff",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                border:
+                                    range === r.value
+                                        ? "2px solid #2185d0"
+                                        : darkMode
+                                            ? "1px solid #444"
+                                            : "1px solid #ccc",
+                                background:
+                                    range === r.value
+                                        ? "#2185d0"
+                                        : darkMode
+                                            ? "#1e1e1e"
+                                            : "#f9f9f9",
+                                color: range === r.value ? "#fff" : "inherit",
+                                fontWeight: range === r.value ? "bold" : "normal",
                             }}
                         >
-                            <div>{r}</div>
+                            {r.label}
                             <div
                                 style={{
-                                    color: isPositive ? "limegreen" : "crimson",
-                                    fontWeight: "bold",
+                                    fontSize: "0.8em",
+                                    marginTop: 4,
+                                    color:
+                                        pct === undefined
+                                            ? "gray"
+                                            : pct >= 0
+                                                ? "#21ba45"
+                                                : "#db2828",
                                 }}
                             >
-                                {isPositive ? "▲" : "▼"} {change.toFixed(2)}%
+                                {pctText}
                             </div>
                         </div>
                     );
                 })}
             </div>
 
-            {/* Controls */}
-            <div
-                style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 12,
-                    marginBottom: 20,
-                    background: darkMode ? "#2b2b2b" : "#fff",
-                    padding: "12px 16px",
-                    borderRadius: "10px",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                }}
-            >
-                <select
-                    value={ticker}
-                    onChange={(e) => setTicker(e.target.value)}
-                    style={{ padding: 6 }}
-                >
-                    <option value="MSFT">Microsoft</option>
-                    <option value="T">AT&T</option>
-                    <option value="IBM">IBM</option>
-                </select>
-                <select
-                    value={range}
-                    onChange={(e) => setRange(e.target.value)}
-                    style={{ padding: 6 }}
-                >
-                    <option value="10y">10y</option>
-                    <option value="5y">5y</option>
-                    <option value="3y">3y</option>
-                    <option value="1y">1y</option>
-                    <option value="6mo">6mo</option>
-                    <option value="1mo">1mo</option>
-                    <option value="1w">1w</option>
-                    <option value="1d">1d</option>
-                </select>
-
-                <label>
+            {/* Prediction type */}
+            <div style={{ marginBottom: 16 }}>
+                <label style={{ marginRight: 8 }}>
                     <input
                         type="radio"
                         checked={predictionType === "daily"}
@@ -273,78 +334,42 @@ export default function StocksDashboard() {
                 </label>
             </div>
 
-            {error && <div style={{ color: "red", marginBottom: 12 }}>Error: {error}</div>}
+            {error && <div style={{ color: "red" }}>Error: {error}</div>}
 
-            {/* Key Data Points */}
             {dataPayload && (
-                <div
-                    style={{
-                        background: darkMode ? "#2b2b2b" : "#fff",
-                        padding: 16,
-                        borderRadius: 10,
-                        marginBottom: 20,
-                    }}
-                >
-                    <h3>Key Data Points</h3>
-                    <div>Previous Close: {dataPayload.technical_info.last_close}</div>
-                    <div>Open: {dataPayload.technical_info.last_open}</div>
-                    <div>Volume: {dataPayload.technical_info.last_volume}</div>
-                    <div>Day’s Range: (to be filled from API if available)</div>
+                <div>
+                    {/* Technical info */}
+                    <div style={{ marginBottom: 20 }}>
+                        <strong>Technical Info:</strong>
+                        <div>Last Close: ${dataPayload.technical_info.last_close}</div>
+                        <div>Last Open: ${dataPayload.technical_info.last_open}</div>
+                        <div>Last Volume: {dataPayload.technical_info.last_volume}</div>
+                    </div>
+
+                    {/* Chart */}
+                    <div style={{ height: 500 }}>
+                        {chartData ? (
+                            <Line data={chartData} options={chartOptions} />
+                        ) : (
+                            <div>No chart data</div>
+                        )}
+                    </div>
+
+                    {/* Predictions list */}
+                    <div style={{ marginTop: 20 }}>
+                        <strong>Predictions:</strong>
+                        <ul>
+                            {(dataPayload.predictions || []).map((p, idx) => (
+                                <li key={idx}>
+                                    {p.date} — ${p.predicted_close.toFixed(2)}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             )}
 
-            {/* About Section */}
-            <div
-                style={{
-                    background: darkMode ? "#2b2b2b" : "#fff",
-                    padding: 16,
-                    borderRadius: 10,
-                    marginBottom: 20,
-                }}
-            >
-                <h3>About {stockInfo[ticker].name}</h3>
-                <p>{stockInfo[ticker].about}</p>
-            </div>
-
-            {/* Chart */}
-            <div
-                style={{
-                    background: darkMode ? "#2b2b2b" : "#fff",
-                    padding: 16,
-                    borderRadius: "10px",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                    marginBottom: 20,
-                }}
-            >
-                <div style={{ height: 500 }}>
-                    {chartData ? (
-                        <Line data={chartData} options={chartOptions} />
-                    ) : (
-                        <div>No chart data</div>
-                    )}
-                </div>
-            </div>
-
-            {/* Predictions */}
-            {dataPayload && (
-                <div
-                    style={{
-                        background: darkMode ? "#2b2b2b" : "#fff",
-                        padding: 16,
-                        borderRadius: "10px",
-                        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                    }}
-                >
-                    <h3>Predictions</h3>
-                    <ul>
-                        {(dataPayload.predictions || []).map((p, idx) => (
-                            <li key={idx}>
-                                {p.date} — ${p.predicted_close.toFixed(2)}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+            {loading && <div>Loading…</div>}
         </div>
     );
 }

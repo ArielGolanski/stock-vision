@@ -10,7 +10,7 @@ const environment = process.env.NODE_ENV || 'default';
 customEnv.env(environment, './config');
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Connect to MongoDB

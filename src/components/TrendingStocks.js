@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from "./ThemeContext";
 
 const TrendingStocks = () => {
+  const { darkMode } = useTheme();
+
   const [gainers, setGainers] = useState([]);
   const [losers, setLosers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,9 +14,9 @@ const TrendingStocks = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const res = await fetch('http://localhost:5001/api/stocks/trending');
-      
+
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
@@ -32,10 +35,10 @@ const TrendingStocks = () => {
 
   useEffect(() => {
     fetchStocks();
-    
+
     // Refresh every 5 minutes
     const interval = setInterval(fetchStocks, 5 * 60 * 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -81,11 +84,11 @@ const TrendingStocks = () => {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ 
-          width: '32px', 
-          height: '32px', 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          width: '32px',
+          height: '32px',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: '#f9fafb',
           borderRadius: '6px',
@@ -192,15 +195,26 @@ const TrendingStocks = () => {
   }
 
   return (
-    <div style={{ padding: '20px', width: '100%' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '20px' 
-      }}>
-        <h2 style={{ margin: 0, color: '#1f2937' }}>Trending Stocks</h2>
-        <div style={{ fontSize: '12px', color: '#666' }}>
+    <div
+      style={{
+        padding: '20px',
+        width: '100%',
+        backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
+        color: darkMode ? '#f1f1f1' : '#111',
+        borderRadius: '8px',
+        transition: 'all 0.25s ease',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}
+      >
+        <h2 style={{ margin: 0 }}>Trending Stocks</h2>
+        <div style={{ fontSize: '12px' }}>
           Last updated: {lastUpdated}
           <button
             onClick={fetchStocks}
@@ -208,10 +222,11 @@ const TrendingStocks = () => {
               marginLeft: '10px',
               padding: '4px 8px',
               fontSize: '12px',
-              backgroundColor: '#f3f4f6',
-              border: '1px solid #d1d5db',
+              backgroundColor: darkMode ? '#333' : '#f3f4f6',
+              border: darkMode ? '1px solid #555' : '1px solid #d1d5db',
               borderRadius: '4px',
               cursor: 'pointer',
+              color: darkMode ? '#f1f1f1' : '#111',
             }}
             disabled={loading}
           >
@@ -221,15 +236,16 @@ const TrendingStocks = () => {
       </div>
 
       {/* Vertical stack instead of grid */}
-      <div style={{ 
+      <div style={{
         display: 'flex',
         flexDirection: 'column',
         gap: '20px'
       }}>
         {/* Top Gainers */}
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px', backgroundColor: '#ffffff' }}>
-          <h3 style={{ 
-            color: '#059669', 
+        <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px', backgroundColor: darkMode ? '#111827' : '#ffffff' }}>
+          <h3 style={{
+            color: '#059669',
+            backgroundColor: darkMode ? '#064e3b' : '#d1fae5',
             borderBottom: '2px solid #059669',
             paddingBottom: '8px',
             marginBottom: '16px'
@@ -248,12 +264,13 @@ const TrendingStocks = () => {
         </div>
 
         {/* Top Losers */}
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px', backgroundColor: '#ffffff' }}>
-          <h3 style={{ 
-            color: '#dc2626', 
+        <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px', backgroundColor: darkMode ? '#111827' : '#ffffff' }}>
+          <h3 style={{
+            color: '#dc2626',
             borderBottom: '2px solid #dc2626',
             paddingBottom: '8px',
-            marginBottom: '16px'
+            marginBottom: '16px',
+            backgroundColor: darkMode ? '#7f1d1d' : '#fee2e2'
           }}>
             📉 Top Losers
           </h3>

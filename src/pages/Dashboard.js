@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TrendingStocks from '../components/TrendingStocks';
-import logo from '../assets/logo.png'; // adjust path if needed
 import StocksDashboard from '../components/StocksDashboard';
 import HeaderMenu from '../components/HeaderMenu';
+import { useTheme } from '../components/ThemeContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
@@ -39,35 +40,16 @@ const Dashboard = () => {
     fetchProfile();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
   return (
-    <div>
+    <div
+      style={{
+        backgroundColor: darkMode ? '#121212' : '#f9fafb',
+        color: darkMode ? '#e5e5e5' : '#111',
+        minHeight: '100vh',
+        transition: 'all 0.25s ease',
+      }}
+    >
       <HeaderMenu />
-      {/* Header */}
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '10px 20px',
-          borderBottom: '1px solid #ddd',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src={logo} alt="Logo" style={{ width: '30px', height: '30px' }} />
-          <h1 style={{ margin: 0 }}>StockVision</h1>
-        </div>
-        <button
-          onClick={handleLogout}
-          style={{ padding: '5px 10px', fontSize: '16px' }}
-        >
-          Logout
-        </button>
-      </header>
 
       {/* Main content + Trending Stocks container */}
       <div style={{ display: 'flex', marginTop: '10px', padding: '0 20px' }}>
