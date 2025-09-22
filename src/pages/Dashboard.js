@@ -25,7 +25,8 @@ const Dashboard = () => {
 
         if (res.status === 200) {
           const data = await res.json();
-          setUserName(data.user.firstName);
+          console.log(data)
+          setUserName(data.email);
         } else {
           localStorage.removeItem('token');
           navigate('/login');

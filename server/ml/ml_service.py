@@ -5,6 +5,7 @@ from model_utils import EnhancedLSTMPredictor, load_enhanced_data, prepare_featu
 import yfinance as yf
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+from datetime import datetime
 
 app = FastAPI(title="Stock Prediction Service")
 
@@ -51,15 +52,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def format_date(d):
-    if isinstance(d, pd.Timestamp):
-        return d.strftime("%Y-%m-%d")
-    return str(d)
+def format_date(idx):
+    """Helper to format pandas Timestamp or datetime to YYYY-MM-DD"""
+    if isinstance(idx, (pd.Timestamp, datetime)):
+        return idx.strftime("%Y-%m-%d")
+    return str(idx)
 
 @app.get("/api/stock-history")
 def stock_history(
     ticker: str = Query(..., description="Stock ticker symbol"),
-    range: str = Query("10y", description="Range like 1d, 5d, 1mo, 1y, 5y, 10y"),
+    period: str = Query("10y", description="Period like 1d, 5d, 1mo, 1y, 5y, 10y"),
     predictionType: str = Query("daily", description="daily or monthly"),
     predictionPeriods: int = Query(5, description="Number of future periods to forecast"),
 ):
@@ -67,8 +69,8 @@ def stock_history(
         ticker = ticker.upper()
         stock = yf.Ticker(ticker)
 
-        # Get history
-        hist = stock.history(period=range, interval="1d")
+        # --- Get historical data ---
+        hist = stock.history(period=period, interval="1d")
         if hist.empty:
             return {"error": "Ticker not found or no data available"}
 
@@ -89,7 +91,7 @@ def stock_history(
             "last_volume": int(last_row["Volume"]),
         }
 
-        # Stock info (basic fundamentals)
+        # --- Basic fundamentals ---
         info = stock.info
         stock_info = {
             "name": info.get("longName", ticker),
@@ -102,8 +104,7 @@ def stock_history(
             },
         }
 
-        # === TODO: Replace this with your ML model prediction ===
-        # Dummy predictions: +1% per day
+        # --- Dummy predictions (replace with ML model if desired) ---
         predictions = []
         last_date = hist.index[-1]
         last_price = last_row["Close"]
@@ -112,16 +113,18 @@ def stock_history(
             for i in range(1, predictionPeriods + 1):
                 future_date = pd.date_range(last_date, periods=i + 1, freq="B")[-1]
                 predicted_price = last_price * (1 + 0.01 * i)
-                predictions.append(
-                    {"date": format_date(future_date), "predicted_close": float(predicted_price)}
-                )
-        else:  # monthly
+                predictions.append({
+                    "date": format_date(future_date),
+                    "predicted_close": float(predicted_price)
+                })
+        else:  # monthly predictions
             for i in range(1, predictionPeriods + 1):
                 future_date = last_date + pd.DateOffset(months=i)
                 predicted_price = last_price * (1 + 0.05 * i)
-                predictions.append(
-                    {"date": format_date(future_date), "predicted_close": float(predicted_price)}
-                )
+                predictions.append({
+                    "date": format_date(future_date),
+                    "predicted_close": float(predicted_price)
+                })
 
         return {
             "history": history,

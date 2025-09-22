@@ -24,9 +24,10 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
+      console.log(data)
       if (res.status === 200) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', data.firstName);
+        localStorage.setItem('userName', data.user.email);
         navigate('/');
       } else {
         setError(data.message || 'Login failed');
@@ -47,7 +48,7 @@ const Login = () => {
       const data = await res.json();
       if (res.status === 200) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', data.firstName);
+        localStorage.setItem('userName', data.user.firstName);
         navigate('/');
       } else {
         setError(data.message || 'Google login failed');
@@ -85,10 +86,10 @@ const Login = () => {
       </form>
 
       <div style={{ marginTop: '20px' }}>
-        <GoogleLogin
+        {/* <GoogleLogin
           onSuccess={handleGoogleLogin}
-          onError={() => setError('Google login failed')}
-        />
+          onError={() => setError('Google login failed')} */}
+        {/* /> */}
       </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}

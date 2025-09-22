@@ -30,24 +30,24 @@ export default function StocksDashboard() {
     const { darkMode } = useTheme();
 
     const [ticker, setTicker] = useState("MSFT");
-    const [range, setRange] = useState("1y");
+    const [period, setPeriod] = useState("1y");
     const [predictionType, setPredictionType] = useState("daily");
     const [dataPayload, setDataPayload] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [rangeChanges, setRangeChanges] = useState({});
+    const [periodChanges, setPeriodChanges] = useState({});
 
-    const ranges = [
+    const periods = [
         { value: "1d", label: "1D", days: 1 },
         { value: "5d", label: "5D", days: 5 },
-        { value: "1mo", label: "1M", days: 21 }, // ~21 trading days
-        { value: "6mo", label: "6M", days: 126 }, // ~21*6
-        { value: "1y", label: "1Y", days: 252 }, // ~252 trading days
+        { value: "1mo", label: "1M", days: 21 },
+        { value: "6mo", label: "6M", days: 126 },
+        { value: "1y", label: "1Y", days: 252 },
         { value: "5y", label: "5Y", days: 1260 },
         { value: "10y", label: "10Y", days: 2520 },
     ];
 
-    // Stock descriptions & key stats (static mockup — ideally from API)
+    // Stock descriptions & key stats
     const stockInfo = {
         MSFT: {
             name: "Microsoft Corporation",
@@ -90,7 +90,7 @@ export default function StocksDashboard() {
         try {
             const params = new URLSearchParams({
                 ticker,
-                range,
+                period,
                 predictionType,
             });
             const resp = await fetch(
@@ -103,19 +103,19 @@ export default function StocksDashboard() {
             const json = await resp.json();
             setDataPayload(json);
 
-            // Compute % changes for ALL ranges
+            // Compute % changes for ALL periods
             if (json.history && json.history.length > 1) {
                 const closes = json.history.map((h) => h.close);
                 const newChanges = {};
-                ranges.forEach((r) => {
-                    if (closes.length > r.days) {
-                        const pastPrice = closes[closes.length - r.days] ?? closes[0];
+                periods.forEach((p) => {
+                    if (closes.length > p.days) {
+                        const pastPrice = closes[closes.length - p.days] ?? closes[0];
                         const lastPrice = closes[closes.length - 1];
                         const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
-                        newChanges[r.value] = pct;
+                        newChanges[p.value] = pct;
                     }
                 });
-                setRangeChanges(newChanges);
+                setPeriodChanges(newChanges);
             }
         } catch (err) {
             setError(err.message);
@@ -130,7 +130,7 @@ export default function StocksDashboard() {
             await fetchData();
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ticker, range, predictionType]);
+    }, [ticker, period, predictionType]);
 
     const chartData = useMemo(() => {
         if (!dataPayload) return null;
@@ -171,8 +171,7 @@ export default function StocksDashboard() {
                 callbacks: {
                     label: function (context) {
                         const val = context.parsed.y;
-                        return `${context.dataset.label}: $${val != null ? val.toFixed(2) : "N/A"
-                            }`;
+                        return `${context.dataset.label}: $${val != null ? val.toFixed(2) : "N/A"}`;
                     },
                 },
             },
@@ -253,7 +252,7 @@ export default function StocksDashboard() {
                 </select>
             </div>
 
-            {/* Range cubes */}
+            {/* Period cubes */}
             <div
                 style={{
                     display: "flex",
@@ -262,16 +261,16 @@ export default function StocksDashboard() {
                     flexWrap: "wrap",
                 }}
             >
-                {ranges.map((r) => {
-                    const pct = rangeChanges[r.value];
+                {periods.map((p) => {
+                    const pct = periodChanges[p.value];
                     const pctText =
                         pct !== undefined
                             ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`
                             : "...";
                     return (
                         <div
-                            key={r.value}
-                            onClick={() => setRange(r.value)}
+                            key={p.value}
+                            onClick={() => setPeriod(p.value)}
                             style={{
                                 cursor: "pointer",
                                 padding: "10px 14px",
@@ -279,22 +278,22 @@ export default function StocksDashboard() {
                                 minWidth: "70px",
                                 textAlign: "center",
                                 border:
-                                    range === r.value
+                                    period === p.value
                                         ? "2px solid #2185d0"
                                         : darkMode
                                             ? "1px solid #444"
                                             : "1px solid #ccc",
                                 background:
-                                    range === r.value
+                                    period === p.value
                                         ? "#2185d0"
                                         : darkMode
                                             ? "#1e1e1e"
                                             : "#f9f9f9",
-                                color: range === r.value ? "#fff" : "inherit",
-                                fontWeight: range === r.value ? "bold" : "normal",
+                                color: period === p.value ? "#fff" : "inherit",
+                                fontWeight: period === p.value ? "bold" : "normal",
                             }}
                         >
-                            {r.label}
+                            {p.label}
                             <div
                                 style={{
                                     fontSize: "0.8em",

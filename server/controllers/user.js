@@ -1,67 +1,121 @@
-const userService = require('../services/user');
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'change_this_to_a_long_random_string';
 
-// Register
-const register = async (req, res) => {
-  const { email, password, firstName, lastName } = req.body;
-  const existingUser = await userService.getUserByEmail(email);
-  if (existingUser) return res.status(409).json({ message: 'Email already exists' });
+// create transporter ONCE (uses Gmail service account)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,    // e.g. stockvision.app@gmail.com
+    pass: process.env.EMAIL_PASS     // Gmail App Password
+  }
+});
 
-  const newUser = await userService.createUser(email, password, firstName, lastName);
-  if (!newUser) return res.status(500).json({ message: 'Error creating user' });
-
-  res.status(201).json(newUser);
-};
-
-// Login
-const login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await userService.getUserByEmail(email);
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-
-  const isValid = await userService.checkPassword(user, password);
-  if (!isValid) return res.status(401).json({ message: 'Invalid credentials' });
-
-  const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-  res.status(200).json({ token, user });
-};
-
-// Protected profile route
-const profile = async (req, res) => {
+// --- Register ---
+exports.register = async (req, res) => {
   try {
-    // req.user.email comes from the decoded JWT
-    const user = await userService.getUserByEmail(req.user.email); // implement in service
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const { email, password, firstName, lastName } = req.body;
 
-    res.status(200).json({
-      message: `Welcome ${user.email}`,
-      user: {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-      }
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(409).json({ message: 'Email already exists' });
+
+    const hashed = await bcrypt.hash(password, 10);
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const user = await User.create({
+      email,
+      password: hashed,
+      firstName,
+      lastName,
+      verified: false,
+      verificationCode
     });
+
+    // send code
+    await transporter.sendMail({
+      from: `"Stock Vision" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Verify your email',
+      text: `Your verification code is: ${verificationCode}`
+    });
+
+    res.status(201).json({ message: 'User registered. Check email for code.' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Middleware to check token
-const isLoggedIn = (req, res, next) => {
-  if (req.headers.authorization) {
-    const token = req.headers.authorization.split(" ")[1];
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded;
-      return next();
-    } catch (err) {
-      return res.status(401).json({ message: 'Invalid token' });
+// --- Verify Email ---
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (user.verificationCode !== code) {
+      return res.status(400).json({ message: 'Invalid code' });
     }
-  } else {
-    return res.status(403).json({ message: 'Token required' });
+
+    user.verified = true;
+    user.verificationCode = undefined;
+    await user.save();
+
+    res.json({ message: 'Email verified successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-module.exports = { register, login, profile, isLoggedIn };
+// --- Login ---
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+    if (!user.verified)
+      return res.status(403).json({ message: 'Email not verified' });
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
+    res.json({
+      token,
+      user: { email: user.email, firstName: user.firstName, lastName: user.lastName }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// --- Middleware ---
+exports.isLoggedIn = (req, res, next) => {
+  const header = req.headers.authorization;
+  if (!header) return res.status(403).json({ message: 'Token required' });
+  const token = header.split(' ')[1];
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+// --- Profile ---
+exports.profile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
