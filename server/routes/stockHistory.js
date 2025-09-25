@@ -30,7 +30,7 @@ router.get("/", async (req, res) => {
         try {
             const mlTarget = predictionType === "monthly" ? "Monthly Change %" : "Daily Change %";
             const mlResp = await axios.get(`http://localhost:8000/predict/${ticker}`, {
-                params: { target: mlTarget, days: predictionPeriods },
+                params: { target: mlTarget, days: predictionPeriods, period: range },
             });
 
             // Expect FastAPI to return { future_prices: [...] }

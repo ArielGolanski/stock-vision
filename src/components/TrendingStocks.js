@@ -69,7 +69,7 @@ const TrendingStocks = () => {
         padding: '12px 16px',
         margin: '6px 0',
         borderRadius: '8px',
-        backgroundColor: isGainer ? '#f0f9ff' : '#fef2f2',
+        backgroundColor: darkMode ? '#000000' : isGainer ? '#f0f9ff' : '#fef2f2',
         border: `1px solid ${isGainer ? '#bfdbfe' : '#fecaca'}`,
         transition: 'all 0.2s ease',
         cursor: 'pointer',
@@ -90,7 +90,7 @@ const TrendingStocks = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#f9fafb',
+          backgroundColor: darkMode ? '#000000' : '#f9fafb',
           borderRadius: '6px',
           border: '1px solid #e5e7eb'
         }}>

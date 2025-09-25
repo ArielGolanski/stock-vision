@@ -1,6 +1,6 @@
 // client/src/components/StocksDashboard.js
-import React, { useState, useEffect, useMemo } from "react";
-import { Line } from "react-chartjs-2";
+import React, { useState, useEffect, useMemo } from 'react';
+import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -11,9 +11,9 @@ import {
     Tooltip,
     Legend,
     Title,
-} from "chart.js";
-import "chartjs-adapter-date-fns";
-import { useTheme } from "./ThemeContext";
+} from 'chart.js';
+import 'chartjs-adapter-date-fns';
+import { useTheme } from './ThemeContext';
 
 ChartJS.register(
     CategoryScale,
@@ -29,68 +29,33 @@ ChartJS.register(
 export default function StocksDashboard() {
     const { darkMode } = useTheme();
 
-    const [ticker, setTicker] = useState("MSFT");
-    const [period, setPeriod] = useState("1y");
-    const [predictionType, setPredictionType] = useState("daily");
+    const [ticker, setTicker] = useState('MSFT');
+    const [range, setRange] = useState('1y');
+    const [predictionType, setPredictionType] = useState('daily');
     const [dataPayload, setDataPayload] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [periodChanges, setPeriodChanges] = useState({});
 
     const periods = [
-        { value: "1d", label: "1D", days: 1 },
-        { value: "5d", label: "5D", days: 5 },
-        { value: "1mo", label: "1M", days: 21 },
-        { value: "6mo", label: "6M", days: 126 },
-        { value: "1y", label: "1Y", days: 252 },
-        { value: "5y", label: "5Y", days: 1260 },
-        { value: "10y", label: "10Y", days: 2520 },
+        { label: '1D', value: '1d', days: 1 },
+        { label: '1W', value: '1w', days: 5 },
+        { label: '1M', value: '1mo', days: 21 },
+        { label: '6M', value: '6mo', days: 126 },
+        { label: '1Y', value: '1y', days: 252 },
+        { label: '3Y', value: '3y', days: 756 },
+        { label: '5Y', value: '5y', days: 1260 },
+        { label: '10Y', value: '10y', days: 2520 },
     ];
 
-    // Stock descriptions & key stats
-    const stockInfo = {
-        MSFT: {
-            name: "Microsoft Corporation",
-            description:
-                "Microsoft develops, licenses, and supports software, services, devices, and solutions worldwide. Its segments include Productivity and Business Processes, Intelligent Cloud, and More Personal Computing.",
-            stats: {
-                "Market Cap": "3.0T",
-                "P/E Ratio": "35.6",
-                "Dividend Yield": "0.8%",
-                "52W Range": "280.00 - 420.00",
-            },
-        },
-        T: {
-            name: "AT&T Inc.",
-            description:
-                "AT&T provides telecommunications, media, and technology services. It offers wireless communications, broadband, pay television, and digital entertainment services globally.",
-            stats: {
-                "Market Cap": "120B",
-                "P/E Ratio": "7.9",
-                "Dividend Yield": "5.8%",
-                "52W Range": "13.00 - 20.00",
-            },
-        },
-        IBM: {
-            name: "International Business Machines",
-            description:
-                "IBM provides integrated solutions and services worldwide. It operates in Cloud & Cognitive Software, Global Business Services, Systems, and Global Financing.",
-            stats: {
-                "Market Cap": "170B",
-                "P/E Ratio": "22.1",
-                "Dividend Yield": "4.5%",
-                "52W Range": "115.00 - 175.00",
-            },
-        },
-    };
-
+    // fetch function
     async function fetchData() {
         setLoading(true);
         setError(null);
         try {
             const params = new URLSearchParams({
                 ticker,
-                period,
+                range,
                 predictionType,
             });
             const resp = await fetch(
@@ -101,6 +66,7 @@ export default function StocksDashboard() {
                 throw new Error(errBody.error || `HTTP ${resp.status}`);
             }
             const json = await resp.json();
+            console.log('Fetch response:', json);
             setDataPayload(json);
 
             // Compute % changes for ALL periods
@@ -108,11 +74,14 @@ export default function StocksDashboard() {
                 const closes = json.history.map((h) => h.close);
                 const newChanges = {};
                 periods.forEach((p) => {
-                    if (closes.length > p.days) {
-                        const pastPrice = closes[closes.length - p.days] ?? closes[0];
+                    if (closes.length > 1) {
+                        const index = Math.max(closes.length - p.days, 0);
+                        const pastPrice = closes[index];
                         const lastPrice = closes[closes.length - 1];
-                        const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
-                        newChanges[p.value] = pct;
+                        if (pastPrice && lastPrice) {
+                            const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
+                            newChanges[p.value] = pct;
+                        }
                     }
                 });
                 setPeriodChanges(newChanges);
@@ -125,12 +94,11 @@ export default function StocksDashboard() {
         }
     }
 
+    // Fetch whenever ticker/range/predictionType changes
     useEffect(() => {
-        (async () => {
-            await fetchData();
-        })();
+        fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ticker, period, predictionType]);
+    }, [ticker, range, predictionType]);
 
     const chartData = useMemo(() => {
         if (!dataPayload) return null;
@@ -143,50 +111,48 @@ export default function StocksDashboard() {
         return {
             datasets: [
                 {
-                    label: "Historical Close",
+                    label: 'Historical Close',
                     data: histData,
                     tension: 0.2,
                     pointRadius: 2,
                     borderWidth: 2,
-                    borderColor: "rgba(33, 133, 208, 1)",
+                    borderColor: darkMode
+                        ? 'rgba(100, 181, 246, 1)'
+                        : 'rgba(33, 133, 208, 1)',
                 },
                 {
-                    label: "Predicted Close",
-                    data: [...histData.slice(-1), ...predData],
+                    label: 'Predicted Close',
+                    data: [...Array(hist.length).fill(null), ...predData],
                     tension: 0.2,
                     pointRadius: 4,
                     borderWidth: 2,
                     borderDash: [8, 6],
-                    borderColor: "rgba(220, 78, 65, 1)",
+                    borderColor: darkMode
+                        ? 'rgba(239, 83, 80, 1)'
+                        : 'rgba(220, 78, 65, 1)',
                 },
             ],
         };
-    }, [dataPayload]);
+    }, [dataPayload, darkMode]);
 
     const chartOptions = {
         responsive: true,
         plugins: {
             tooltip: {
-                mode: "nearest",
+                mode: 'nearest',
                 callbacks: {
                     label: function (context) {
                         const val = context.parsed.y;
-                        return `${context.dataset.label}: $${val != null ? val.toFixed(2) : "N/A"}`;
+                        return `${context.dataset.label}: $${val != null ? val.toFixed(2) : 'N/A'
+                            }`;
                     },
                 },
             },
-            legend: { position: "top" },
+            legend: { position: 'top' },
         },
         scales: {
-            x: {
-                type: "time",
-                time: { unit: "day", tooltipFormat: "PPP" },
-                grid: { color: darkMode ? "#444" : "#ddd" },
-            },
-            y: {
-                beginAtZero: false,
-                grid: { color: darkMode ? "#444" : "#ddd" },
-            },
+            x: { type: 'time', time: { unit: 'day', tooltipFormat: 'PPP' } },
+            y: { beginAtZero: false },
         },
     };
 
@@ -194,116 +160,81 @@ export default function StocksDashboard() {
         <div
             style={{
                 padding: 20,
-                background: darkMode ? "#121212" : "#fafafa",
-                color: darkMode ? "#f1f1f1" : "#111",
-                minHeight: "100vh",
+                background: darkMode ? '#121212' : '#fafafa',
+                color: darkMode ? '#f1f1f1' : '#111',
+                borderRadius: '8px',
             }}
         >
-            <h2 style={{ marginBottom: 20 }}>Stocks Dashboard</h2>
+            <h2>Stocks Dashboard</h2>
 
-            {/* Stock Info */}
-            <div
-                style={{
-                    marginBottom: 20,
-                    padding: 16,
-                    borderRadius: 8,
-                    background: darkMode ? "#1e1e1e" : "#fff",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-            >
-                <h3>{stockInfo[ticker].name}</h3>
-                <p style={{ fontSize: "0.9em", opacity: 0.85 }}>
-                    {stockInfo[ticker].description}
-                </p>
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-                        gap: 10,
-                        marginTop: 10,
-                    }}
-                >
-                    {Object.entries(stockInfo[ticker].stats).map(([key, val]) => (
-                        <div
-                            key={key}
-                            style={{
-                                padding: "8px 10px",
-                                borderRadius: 6,
-                                background: darkMode ? "#2a2a2a" : "#f5f5f5",
-                            }}
-                        >
-                            <div style={{ fontSize: "0.8em", opacity: 0.7 }}>{key}</div>
-                            <div style={{ fontWeight: "bold" }}>{val}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Ticker selector */}
-            <div style={{ marginBottom: 16 }}>
-                <select
-                    value={ticker}
-                    onChange={(e) => setTicker(e.target.value)}
-                    style={{ padding: "6px 10px", borderRadius: 6 }}
-                >
+            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <select value={ticker} onChange={(e) => setTicker(e.target.value)}>
                     <option value="MSFT">Microsoft</option>
                     <option value="T">AT&T</option>
                     <option value="IBM">IBM</option>
                 </select>
+
+                <label>
+                    <input
+                        type="radio"
+                        checked={predictionType === 'daily'}
+                        onChange={() => setPredictionType('daily')}
+                    />{' '}
+                    Daily
+                </label>
+                <label>
+                    <input
+                        type="radio"
+                        checked={predictionType === 'monthly'}
+                        onChange={() => setPredictionType('monthly')}
+                    />{' '}
+                    Monthly
+                </label>
             </div>
 
-            {/* Period cubes */}
-            <div
-                style={{
-                    display: "flex",
-                    gap: 8,
-                    marginBottom: 20,
-                    flexWrap: "wrap",
-                }}
-            >
+            {/* Range cubes */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                 {periods.map((p) => {
+                    const isActive = range === p.value;
                     const pct = periodChanges[p.value];
                     const pctText =
-                        pct !== undefined
-                            ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`
-                            : "...";
+                        pct !== undefined ? `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
+
                     return (
                         <div
                             key={p.value}
-                            onClick={() => setPeriod(p.value)}
+                            onClick={() => setRange(p.value)}
                             style={{
-                                cursor: "pointer",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                minWidth: "70px",
-                                textAlign: "center",
-                                border:
-                                    period === p.value
-                                        ? "2px solid #2185d0"
-                                        : darkMode
-                                            ? "1px solid #444"
-                                            : "1px solid #ccc",
-                                background:
-                                    period === p.value
-                                        ? "#2185d0"
-                                        : darkMode
-                                            ? "#1e1e1e"
-                                            : "#f9f9f9",
-                                color: period === p.value ? "#fff" : "inherit",
-                                fontWeight: period === p.value ? "bold" : "normal",
+                                flex: 1,
+                                padding: '10px',
+                                borderRadius: '6px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                backgroundColor: isActive
+                                    ? darkMode
+                                        ? '#333'
+                                        : '#e3f2fd'
+                                    : darkMode
+                                        ? '#1e1e1e'
+                                        : '#fff',
+                                border: isActive
+                                    ? '2px solid #2196f3'
+                                    : '1px solid rgba(0,0,0,0.1)',
+                                transition: 'all 0.2s ease',
                             }}
                         >
-                            {p.label}
+                            <div style={{ fontWeight: 'bold' }}>{p.label}</div>
                             <div
                                 style={{
-                                    fontSize: "0.8em",
-                                    marginTop: 4,
+                                    fontSize: '12px',
                                     color:
-                                        pct === undefined
-                                            ? "gray"
-                                            : pct >= 0
-                                                ? "#21ba45"
-                                                : "#db2828",
+                                        pct > 0
+                                            ? '#059669'
+                                            : pct < 0
+                                                ? '#dc2626'
+                                                : darkMode
+                                                    ? '#aaa'
+                                                    : '#666',
                                 }}
                             >
                                 {pctText}
@@ -313,39 +244,17 @@ export default function StocksDashboard() {
                 })}
             </div>
 
-            {/* Prediction type */}
-            <div style={{ marginBottom: 16 }}>
-                <label style={{ marginRight: 8 }}>
-                    <input
-                        type="radio"
-                        checked={predictionType === "daily"}
-                        onChange={() => setPredictionType("daily")}
-                    />{" "}
-                    Daily
-                </label>
-                <label>
-                    <input
-                        type="radio"
-                        checked={predictionType === "monthly"}
-                        onChange={() => setPredictionType("monthly")}
-                    />{" "}
-                    Monthly
-                </label>
-            </div>
-
-            {error && <div style={{ color: "red" }}>Error: {error}</div>}
+            {error && <div style={{ color: 'red' }}>Error: {error}</div>}
 
             {dataPayload && (
                 <div>
-                    {/* Technical info */}
-                    <div style={{ marginBottom: 20 }}>
+                    <div style={{ marginBottom: 12 }}>
                         <strong>Technical Info:</strong>
                         <div>Last Close: ${dataPayload.technical_info.last_close}</div>
                         <div>Last Open: ${dataPayload.technical_info.last_open}</div>
                         <div>Last Volume: {dataPayload.technical_info.last_volume}</div>
                     </div>
 
-                    {/* Chart */}
                     <div style={{ height: 500 }}>
                         {chartData ? (
                             <Line data={chartData} options={chartOptions} />
@@ -354,8 +263,7 @@ export default function StocksDashboard() {
                         )}
                     </div>
 
-                    {/* Predictions list */}
-                    <div style={{ marginTop: 20 }}>
+                    <div style={{ marginTop: 12 }}>
                         <strong>Predictions:</strong>
                         <ul>
                             {(dataPayload.predictions || []).map((p, idx) => (
