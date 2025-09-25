@@ -119,3 +119,49 @@ exports.profile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// --- Update Profile (Settings page) ---
+exports.updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, email } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (email !== undefined) {
+      const existing = await User.findOne({ email, _id: { $ne: user._id } });
+      if (existing) return res.status(409).json({ message: 'Email already exists' });
+      user.email = email;
+    }
+
+    await user.save();
+    res.json({ message: 'Profile updated', user: { firstName: user.firstName, lastName: user.lastName, email: user.email } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// --- Change Password ---
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const match = await bcrypt.compare(oldPassword, user.password);
+    if (!match) return res.status(400).json({ message: 'Old password is incorrect' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

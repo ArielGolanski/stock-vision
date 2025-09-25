@@ -104,6 +104,7 @@ export default function StocksDashboard() {
         if (!dataPayload) return null;
         const hist = dataPayload.history || [];
         const preds = dataPayload.predictions || [];
+        console.log('Chart data prep:', { hist, preds })
 
         const histData = hist.map((h) => ({ x: h.date, y: h.close }));
         const predData = preds.map((p) => ({ x: p.date, y: p.predicted_close }));
@@ -122,7 +123,7 @@ export default function StocksDashboard() {
                 },
                 {
                     label: 'Predicted Close',
-                    data: [...Array(hist.length).fill(null), ...predData],
+                    data: predData,
                     tension: 0.2,
                     pointRadius: 4,
                     borderWidth: 2,

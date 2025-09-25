@@ -28,7 +28,12 @@ export default function HeaderMenu() {
             }}
         >
             {/* Logo */}
-            <img src={logo} alt="StockVision Logo" style={{ height: "40px" }} />
+            <img
+                src={logo}
+                alt="StockVision Logo"
+                style={{ height: "40px", cursor: "pointer" }}
+                onClick={() => navigate("/")}
+            />
             <h1 style={{ margin: 0 }}>StockVision</h1>
 
             {/* Hamburger Button */}
@@ -88,6 +93,7 @@ export default function HeaderMenu() {
                             cursor: "pointer",
                             color: "inherit",
                         }}
+                        onClick={() => { navigate("/settings") }}
                     >
                         ⚙️ Settings
                     </button>
