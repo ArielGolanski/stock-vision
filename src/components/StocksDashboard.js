@@ -1,4 +1,3 @@
-// client/src/components/StocksDashboard.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -36,6 +35,11 @@ export default function StocksDashboard() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [periodChanges, setPeriodChanges] = useState({});
+    const [activeTab, setActiveTab] = useState('chart'); // chart | news | overview
+    const [news, setNews] = useState([]);
+    const [overview, setOverview] = useState(null);
+    const [newsLoading, setNewsLoading] = useState(false);
+    const [overviewLoading, setOverviewLoading] = useState(false);
 
     const periods = [
         { label: '1D', value: '1d', days: 1 },
@@ -48,7 +52,7 @@ export default function StocksDashboard() {
         { label: '10Y', value: '10y', days: 2520 },
     ];
 
-    // fetch function
+    // fetch function for history + predictions
     async function fetchData() {
         setLoading(true);
         setError(null);
@@ -66,10 +70,9 @@ export default function StocksDashboard() {
                 throw new Error(errBody.error || `HTTP ${resp.status}`);
             }
             const json = await resp.json();
-            console.log('Fetch response:', json);
             setDataPayload(json);
 
-            // Compute % changes for ALL periods
+            // Compute % changes
             if (json.history && json.history.length > 1) {
                 const closes = json.history.map((h) => h.close);
                 const newChanges = {};
@@ -94,9 +97,47 @@ export default function StocksDashboard() {
         }
     }
 
-    // Fetch whenever ticker/range/predictionType changes
+    // fetch news
+    async function fetchNews() {
+        setNewsLoading(true);
+        try {
+            const res = await fetch(
+                `http://localhost:5001/api/stocks/news?ticker=${ticker}`
+            );
+            if (!res.ok) throw new Error(`Failed to fetch news`);
+            const json = await res.json();
+            setNews(json.articles || []);
+        } catch (err) {
+            console.error('News fetch error:', err);
+            setNews([]);
+        } finally {
+            setNewsLoading(false);
+        }
+    }
+
+    // fetch overview
+    async function fetchOverview() {
+        setOverviewLoading(true);
+        try {
+            const res = await fetch(
+                `http://localhost:5001/api/stocks/overview?ticker=${ticker}`
+            );
+            if (!res.ok) throw new Error(`Failed to fetch overview`);
+            const json = await res.json();
+            setOverview(json);
+        } catch (err) {
+            console.error('Overview fetch error:', err);
+            setOverview(null);
+        } finally {
+            setOverviewLoading(false);
+        }
+    }
+
+    // refetch on change
     useEffect(() => {
         fetchData();
+        fetchNews();
+        fetchOverview();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ticker, range, predictionType]);
 
@@ -104,7 +145,6 @@ export default function StocksDashboard() {
         if (!dataPayload) return null;
         const hist = dataPayload.history || [];
         const preds = dataPayload.predictions || [];
-        console.log('Chart data prep:', { hist, preds })
 
         const histData = hist.map((h) => ({ x: h.date, y: h.close }));
         const predData = preds.map((p) => ({ x: p.date, y: p.predicted_close }));
@@ -221,7 +261,6 @@ export default function StocksDashboard() {
                                 border: isActive
                                     ? '2px solid #2196f3'
                                     : '1px solid rgba(0,0,0,0.1)',
-                                transition: 'all 0.2s ease',
                             }}
                         >
                             <div style={{ fontWeight: 'bold' }}>{p.label}</div>
@@ -245,39 +284,119 @@ export default function StocksDashboard() {
                 })}
             </div>
 
-            {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+            {/* Tabs: Chart / News / Overview */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
+                {['chart', 'news', 'overview'].map((tab) => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: activeTab === tab ? '2px solid #2196f3' : '1px solid #ccc',
+                            background: activeTab === tab ? '#2196f3' : 'transparent',
+                            color:
+                                activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                ))}
+            </div>
 
-            {dataPayload && (
+            {/* Chart Tab */}
+            {activeTab === 'chart' && (
+                <>
+                    {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+
+                    {dataPayload && (
+                        <div>
+                            <div style={{ marginBottom: 12 }}>
+                                <strong>Technical Info:</strong>
+                                <div>Last Close: ${dataPayload.technical_info.last_close}</div>
+                                <div>Last Open: ${dataPayload.technical_info.last_open}</div>
+                                <div>Last Volume: {dataPayload.technical_info.last_volume}</div>
+                            </div>
+
+                            <div style={{ height: 500 }}>
+                                {chartData ? (
+                                    <Line data={chartData} options={chartOptions} />
+                                ) : (
+                                    <div>No chart data</div>
+                                )}
+                            </div>
+
+                            <div style={{ marginTop: 12 }}>
+                                <strong>Predictions:</strong>
+                                <ul>
+                                    {(dataPayload.predictions || []).map((p, idx) => (
+                                        <li key={idx}>
+                                            {p.date} — ${p.predicted_close.toFixed(2)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    {loading && <div>Loading…</div>}
+                </>
+            )}
+
+            {/* News Tab */}
+            {activeTab === 'news' && (
                 <div>
-                    <div style={{ marginBottom: 12 }}>
-                        <strong>Technical Info:</strong>
-                        <div>Last Close: ${dataPayload.technical_info.last_close}</div>
-                        <div>Last Open: ${dataPayload.technical_info.last_open}</div>
-                        <div>Last Volume: {dataPayload.technical_info.last_volume}</div>
-                    </div>
-
-                    <div style={{ height: 500 }}>
-                        {chartData ? (
-                            <Line data={chartData} options={chartOptions} />
-                        ) : (
-                            <div>No chart data</div>
-                        )}
-                    </div>
-
-                    <div style={{ marginTop: 12 }}>
-                        <strong>Predictions:</strong>
-                        <ul>
-                            {(dataPayload.predictions || []).map((p, idx) => (
-                                <li key={idx}>
-                                    {p.date} — ${p.predicted_close.toFixed(2)}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {newsLoading && <div>Loading news…</div>}
+                    {!newsLoading && news.length === 0 && <div>No news available.</div>}
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {news.map((article, idx) => (
+                            <li
+                                key={idx}
+                                style={{
+                                    padding: '10px',
+                                    borderBottom: '1px solid #ddd',
+                                    marginBottom: '8px',
+                                }}
+                            >
+                                <a
+                                    href={article.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        color: darkMode ? '#90caf9' : '#1a0dab',
+                                        fontWeight: 'bold',
+                                        textDecoration: 'none',
+                                    }}
+                                >
+                                    {article.headline}
+                                </a>
+                                <div style={{ fontSize: '12px', color: '#666' }}>
+                                    {article.source} — {article.date}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             )}
 
-            {loading && <div>Loading…</div>}
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+                <div>
+                    {overviewLoading && <div>Loading overview…</div>}
+                    {!overviewLoading && !overview && <div>No overview available.</div>}
+                    {overview && (
+                        <div>
+                            <h3>{overview.name} ({overview.symbol})</h3>
+                            <p>{overview.description}</p>
+                            <p><strong>Sector:</strong> {overview.sector}</p>
+                            <p><strong>Industry:</strong> {overview.industry}</p>
+                            <p><strong>Market Cap:</strong> {overview.marketCap}</p>
+                            <p><strong>Website:</strong> <a href={overview.website} target="_blank" rel="noreferrer">{overview.website}</a></p>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

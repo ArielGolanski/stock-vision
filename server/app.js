@@ -23,6 +23,7 @@ app.use('/api/users', userRoutes);
 
 const stocksRoutes = require('./routes/stocks');
 app.use('/api/stocks', stocksRoutes);
+
 const stockHistoryRoutes = require('./routes/stockHistory');
 app.use('/api/stock-history', stockHistoryRoutes);
 
