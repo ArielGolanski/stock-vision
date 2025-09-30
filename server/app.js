@@ -21,6 +21,9 @@ mongoose.connect(process.env.CONNECTION_STRING)
 const userRoutes = require('./routes/user');
 app.use('/api/users', userRoutes);
 
+const commentRoutes = require('./routes/comment');
+app.use('/api/comments', commentRoutes);
+
 const stocksRoutes = require('./routes/stocks');
 app.use('/api/stocks', stocksRoutes);
 
