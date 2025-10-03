@@ -8,6 +8,8 @@ router.get("/", async (req, res) => {
     try {
         const ticker = (req.query.ticker || "").trim().toUpperCase();
         const range = req.query.range || "10y";
+        console.log("Recieved stock history request for:", req.query.range);
+        console.log("Range is set to:", range)
         const predictionType = (req.query.predictionType || "daily").toLowerCase();
         const predictionPeriods = parseInt(req.query.predictionPeriods || "5", 10);
 
@@ -20,6 +22,8 @@ router.get("/", async (req, res) => {
             params: { ticker, range, predictionType, predictionPeriods },
         });
         const stockData = stockResp.data;
+
+
 
         if (!stockData || stockData.error) {
             return res.status(404).json({ error: stockData.error || "No data found" });

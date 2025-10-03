@@ -43,7 +43,7 @@ export default function StocksDashboard() {
 
     const periods = [
         { label: '1D', value: '1d', days: 1 },
-        { label: '1W', value: '1w', days: 5 },
+        { label: '5D', value: '5d', days: 5 },
         { label: '1M', value: '1mo', days: 21 },
         { label: '6M', value: '6mo', days: 126 },
         { label: '1Y', value: '1y', days: 252 },
@@ -62,6 +62,14 @@ export default function StocksDashboard() {
                 range,
                 predictionType,
             });
+
+            console.log("DEBUG fetch params:", {
+                ticker,
+                range,
+                predictionType,
+                queryString: params.toString(),
+            });
+
             const resp = await fetch(
                 `http://localhost:5001/api/stock-history?${params.toString()}`
             );
@@ -135,6 +143,7 @@ export default function StocksDashboard() {
 
     // refetch on change
     useEffect(() => {
+        console.log("Fetching data for:", { ticker, range })
         fetchData();
         fetchNews();
         fetchOverview();
@@ -148,6 +157,15 @@ export default function StocksDashboard() {
 
         const histData = hist.map((h) => ({ x: h.date, y: h.close }));
         const predData = preds.map((p) => ({ x: p.date, y: p.predicted_close }));
+
+        // Fix gap: connect last history to first prediction
+        if (histData.length > 0 && predData.length > 0) {
+            const lastHist = histData[histData.length - 1];
+            const firstPred = predData[0];
+            if (lastHist.x !== firstPred.x) {
+                predData.unshift({ x: lastHist.x, y: lastHist.y });
+            }
+        }
 
         return {
             datasets: [
@@ -235,6 +253,7 @@ export default function StocksDashboard() {
 
             {/* Range cubes */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                {console.log("periods", periods)}
                 {periods.map((p) => {
                     const isActive = range === p.value;
                     const pct = periodChanges[p.value];

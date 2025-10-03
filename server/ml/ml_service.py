@@ -61,17 +61,23 @@ def format_date(idx):
 @app.get("/api/stock-history")
 def stock_history(
     ticker: str = Query(..., description="Stock ticker symbol"),
-    period: str = Query("10y", description="Period like 1d, 5d, 1mo, 1y, 5y, 10y"),
+    time_range: str = Query("10y", alias="range", description="Period like 1d, 5d, 1mo, 1y, 5y, 10y"),
     predictionType: str = Query("daily", description="daily or monthly"),
     predictionPeriods: int = Query(5, description="Number of future periods to forecast"),
 ):
     try:
+        # Debugging logs
+        print(f"DEBUG stock_history: ticker={ticker}, period={time_range}, "
+              f"predictionType={predictionType}, predictionPeriods={predictionPeriods}")
+
         ticker = ticker.upper()
         stock = yf.Ticker(ticker)
 
         # --- Get historical data ---
-        hist = stock.history(period=period, interval="1d")
+        print(f"DEBUG stock_histoty: period={range}")
+        hist = stock.history(period=time_range, interval="1d")
         if hist.empty:
+            print(f"DEBUG stock_history: No data for {ticker} with period={range}")
             return {"error": "Ticker not found or no data available"}
 
         history = [
@@ -83,6 +89,8 @@ def stock_history(
             }
             for idx, row in hist.iterrows()
         ]
+
+        print(f"History is {history}")
 
         last_row = hist.iloc[-1]
         technical_info = {
