@@ -39,7 +39,7 @@ stock-vision/
 ### 1. Clone repository
 
 ```bash
-git clone https://github.com/yourusername/stock-vision.git
+git clone https://github.com/ArielGolanski/stock-vision.git
 cd stock-vision
 
 cd server
@@ -48,6 +48,7 @@ npm start
 
 cd ml
 pip install -r requirements.txt
+papermill notebooks/Models_Daily_Monthly.ipynb notebooks/train_models_out.ipynb
 uvicorn ml_service:app --reload --port 8000
 
 cd..
