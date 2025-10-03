@@ -47,6 +47,20 @@ export default function StocksDashboard() {
     const [newComment, setNewComment] = useState('');
     const [commentError, setCommentError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState(null);
+
+    // Get current user ID from token
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setCurrentUserId(payload.id);
+            } catch (err) {
+                console.error('Error parsing token:', err);
+            }
+        }
+    }, []);
 
     const periods = [
         { label: '1D', value: '1d', days: 1 },
@@ -434,9 +448,11 @@ export default function StocksDashboard() {
                                         <strong style={{ color: darkMode ? '#90caf9' : '#2196f3' }}>{comment.firstName}</strong>
                                         <span style={{ marginLeft: '8px', fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{formatDate(comment.createdAt)}</span>
                                     </div>
-                                    <button onClick={() => handleDeleteComment(comment._id)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer' }}>
-                                        Delete
-                                    </button>
+                                    {currentUserId === comment.userId && (
+                                        <button onClick={() => handleDeleteComment(comment._id)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer' }}>
+                                            Delete
+                                        </button>
+                                    )}
                                 </div>
                                 <p style={{ margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{comment.content}</p>
                             </div>
