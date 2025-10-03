@@ -1,0 +1,29 @@
+name: Train Models
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # every day at midnight UTC
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          cd server/ml
+          pip install -r requirements.txt
+          pip install papermill
+
+      - name: Run training notebook
+        run: |
+          cd server/ml
+          papermill notebooks/Models_Daily_Monthly.ipynb notebooks/train_models_out.ipynb

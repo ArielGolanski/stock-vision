@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pandas
+numpy
+scikit-learn
+tensorflow
+torch
+yfinance
+joblib
+matplotlib
+seaborn
+jupyter
+papermill
