@@ -39,11 +39,32 @@ export default function StocksDashboard() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [periodChanges, setPeriodChanges] = useState({});
-    const [activeTab, setActiveTab] = useState('chart'); // chart | news | overview
+    const [activeTab, setActiveTab] = useState('chart');
     const [news, setNews] = useState([]);
     const [overview, setOverview] = useState(null);
     const [newsLoading, setNewsLoading] = useState(false);
     const [overviewLoading, setOverviewLoading] = useState(false);
+
+    // Discussion state
+    const [comments, setComments] = useState([]);
+    const [commentsLoading, setCommentsLoading] = useState(false);
+    const [newComment, setNewComment] = useState('');
+    const [commentError, setCommentError] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState(null);
+
+    // Get current user ID from token
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setCurrentUserId(payload.id);
+            } catch (err) {
+                console.error('Error parsing token:', err);
+            }
+        }
+    }, []);
 
     const periods = [
         { label: '1D', value: '1d', days: 1 },
@@ -221,14 +242,7 @@ export default function StocksDashboard() {
     };
 
     return (
-        <div
-            style={{
-                padding: 20,
-                background: darkMode ? '#121212' : '#fafafa',
-                color: darkMode ? '#f1f1f1' : '#111',
-                borderRadius: '8px',
-            }}
-        >
+        <div style={{ padding: 20, background: darkMode ? '#121212' : '#fafafa', color: darkMode ? '#f1f1f1' : '#111', borderRadius: '8px' }}>
             <h2>Stocks Dashboard</h2>
 
             <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
@@ -255,7 +269,6 @@ export default function StocksDashboard() {
                 </label>
             </div>
 
-            {/* Range cubes */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                 {periods.map((p) => {
                     const isActive = range === p.value;
@@ -280,21 +293,7 @@ export default function StocksDashboard() {
                             }}
                         >
                             <div style={{ fontWeight: 'bold' }}>{p.label}</div>
-                            <div
-                                style={{
-                                    fontSize: '12px',
-                                    color:
-                                        pct > 0
-                                            ? '#059669'
-                                            : pct < 0
-                                                ? '#dc2626'
-                                                : darkMode
-                                                    ? '#aaa'
-                                                    : '#666',
-                                }}
-                            >
-                                {pctText}
-                            </div>
+                            <div style={{ fontSize: '12px', color: pct > 0 ? '#059669' : pct < 0 ? '#dc2626' : darkMode ? '#aaa' : '#666' }}>{pctText}</div>
                         </div>
                     );
                 })}
@@ -320,7 +319,6 @@ export default function StocksDashboard() {
                 ))}
             </div>
 
-            {/* Chart Tab */}
             {activeTab === 'chart' && (
                 <>
                     {error && <div style={{ color: 'red' }}>Error: {error}</div>}
@@ -334,15 +332,9 @@ export default function StocksDashboard() {
                                 <div>Last Open: ${technicalInfo.last_open}</div>
                                 <div>Last Volume: {technicalInfo.last_volume}</div>
                             </div>
-
                             <div style={{ height: 500 }}>
-                                {chartData ? (
-                                    <Line data={chartData} options={chartOptions} />
-                                ) : (
-                                    <div>No chart data</div>
-                                )}
+                                {chartData ? <Line data={chartData} options={chartOptions} /> : <div>No chart data</div>}
                             </div>
-
                             <div style={{ marginTop: 12 }}>
                                 <strong>Predictions:</strong>
                                 <ul>
@@ -356,7 +348,6 @@ export default function StocksDashboard() {
                 </>
             )}
 
-            {/* News Tab */}
             {activeTab === 'news' && (
                 <div>
                     {newsLoading && <div>Loading news…</div>}
@@ -376,16 +367,13 @@ export default function StocksDashboard() {
                                 >
                                     {article.headline}
                                 </a>
-                                <div style={{ fontSize: '12px', color: '#666' }}>
-                                    {article.source} — {article.date}
-                                </div>
+                                <div style={{ fontSize: '12px', color: '#666' }}>{article.source} — {article.date}</div>
                             </li>
                         ))}
                     </ul>
                 </div>
             )}
 
-            {/* Overview Tab */}
             {activeTab === 'overview' && (
                 <div>
                     {overviewLoading && <div>Loading overview…</div>}
@@ -405,6 +393,48 @@ export default function StocksDashboard() {
                             </p>
                         </div>
                     )}
+                </div>
+            )}
+
+            {activeTab === 'discussion' && (
+                <div>
+                    <h3 style={{ marginBottom: '16px' }}>Discussion for {ticker}</h3>
+                    
+                    <div style={{ marginBottom: '24px' }}>
+                        <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Share your thoughts about this stock..." maxLength={1000} style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: `1px solid ${darkMode ? '#444' : '#ccc'}`, background: darkMode ? '#1e1e1e' : '#fff', color: darkMode ? '#f1f1f1' : '#111', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }} />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                            <span style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{newComment.length}/1000</span>
+                            <button onClick={handleSubmitComment} disabled={submitting || !newComment.trim()} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: submitting || !newComment.trim() ? '#ccc' : '#2196f3', color: '#fff', cursor: submitting || !newComment.trim() ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                                {submitting ? 'Posting...' : 'Post Comment'}
+                            </button>
+                        </div>
+                        {commentError && <div style={{ color: '#dc2626', marginTop: '8px', fontSize: '14px' }}>{commentError}</div>}
+                    </div>
+
+                    {commentsLoading && <div>Loading comments…</div>}
+                    {!commentsLoading && comments.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '40px', color: darkMode ? '#aaa' : '#666' }}>
+                            No comments yet. Be the first to share your thoughts!
+                        </div>
+                    )}
+                    <div>
+                        {comments.map((comment) => (
+                            <div key={comment._id} style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, marginBottom: '12px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                                    <div>
+                                        <strong style={{ color: darkMode ? '#90caf9' : '#2196f3' }}>{comment.firstName}</strong>
+                                        <span style={{ marginLeft: '8px', fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{formatDate(comment.createdAt)}</span>
+                                    </div>
+                                    {currentUserId === comment.userId && (
+                                        <button onClick={() => handleDeleteComment(comment._id)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer' }}>
+                                            Delete
+                                        </button>
+                                    )}
+                                </div>
+                                <p style={{ margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{comment.content}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
