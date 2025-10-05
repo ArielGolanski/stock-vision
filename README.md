@@ -36,24 +36,46 @@ stock-vision/
 
 ## ⚙️ Installation
 
-### 1. Clone repository
+### Clone repository
 
 ```bash
 git clone https://github.com/ArielGolanski/stock-vision.git
 cd stock-vision
+```
 
+## ▶ Deployment
+
+### 1. Run server
+```bash
 cd server
+```
+Run on server folder:
+```bash
 npm install
 npm start
+```
 
+### 2. Train model
+
+```bash
 cd ml
 pip install -r requirements.txt
-papermill notebooks/Models_Daily_Monthly.ipynb notebooks/train_models_out.ipynb
+papermill papermill notebooks/Models_Daily_Monthly.ipynb notebooks/Models_Daily_Monthly.ipynb --force
+```
+
+### 3. Run predictions model
+Run on server/ml folder:
+```bash
 uvicorn ml_service:app --reload --port 8000
+```
 
+### 4. Run frontend
+```bash
 cd..
 cd..
-
+```
+Run on root folder:
+```bash
 npm install
 npm start
 ```

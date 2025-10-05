@@ -1,29 +1,28 @@
-name: Train Models
+name: Train and Update ML Models
 
 on:
   schedule:
-    - cron: "0 0 * * *"   # every day at midnight UTC
-  workflow_dispatch:
+    - cron: "0 0 * * *"  # every 24h
+  workflow_dispatch:  # allows manual run too
 
 jobs:
   train:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server/ml
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: |
-          cd server/ml
-          pip install -r requirements.txt
-          pip install papermill
+        run: pip install -r requirements.txt
 
-      - name: Run training notebook
-        run: |
-          cd server/ml
-          papermill notebooks/Models_Daily_Monthly.ipynb notebooks/train_models_out.ipynb
+      - name: Run notebook
+        run: papermill notebooks/Models_Daily_Monthly.ipynb notebooks/Models_Daily_Monthly.ipynb --force
+        # Force to overwrite the output notebook each time

@@ -1,3 +1,4 @@
+// client/src/components/StocksDashboard.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -31,7 +32,10 @@ export default function StocksDashboard() {
     const [ticker, setTicker] = useState('MSFT');
     const [range, setRange] = useState('1y');
     const [predictionType, setPredictionType] = useState('daily');
-    const [dataPayload, setDataPayload] = useState(null);
+    const [fullHistory, setFullHistory] = useState([]); // always 10 years
+    const [filteredHistory, setFilteredHistory] = useState([]);
+    const [predictions, setPredictions] = useState([]);
+    const [technicalInfo, setTechnicalInfo] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [periodChanges, setPeriodChanges] = useState({});
@@ -43,7 +47,7 @@ export default function StocksDashboard() {
 
     const periods = [
         { label: '1D', value: '1d', days: 1 },
-        { label: '5D', value: '5d', days: 5 },
+        { label: '1W', value: '1w', days: 5 },
         { label: '1M', value: '1mo', days: 21 },
         { label: '6M', value: '6mo', days: 126 },
         { label: '1Y', value: '1y', days: 252 },
@@ -52,113 +56,119 @@ export default function StocksDashboard() {
         { label: '10Y', value: '10y', days: 2520 },
     ];
 
-    // fetch function for history + predictions
-    async function fetchData() {
+    /** Helper: get cutoff date by range **/
+    function getCutoffDate(range) {
+        const d = new Date();
+        switch (range) {
+            case '1d': d.setDate(d.getDate() - 1); break;
+            case '1w': d.setDate(d.getDate() - 7); break;
+            case '1mo': d.setMonth(d.getMonth() - 1); break;
+            case '6mo': d.setMonth(d.getMonth() - 6); break;
+            case '1y': d.setFullYear(d.getFullYear() - 1); break;
+            case '3y': d.setFullYear(d.getFullYear() - 3); break;
+            case '5y': d.setFullYear(d.getFullYear() - 5); break;
+            default: d.setFullYear(d.getFullYear() - 10);
+        }
+        return d;
+    }
+
+    /** Fetch 10y history once per ticker **/
+    async function fetchFullHistory() {
         setLoading(true);
         setError(null);
         try {
             const params = new URLSearchParams({
                 ticker,
-                range,
+                range: '10y',
                 predictionType,
             });
 
-            console.log("DEBUG fetch params:", {
-                ticker,
-                range,
-                predictionType,
-                queryString: params.toString(),
-            });
-
-            const resp = await fetch(
-                `http://localhost:5001/api/stock-history?${params.toString()}`
-            );
+            const resp = await fetch(`http://localhost:5001/api/stock-history?${params.toString()}`);
             if (!resp.ok) {
                 const errBody = await resp.json().catch(() => ({}));
                 throw new Error(errBody.error || `HTTP ${resp.status}`);
             }
-            const json = await resp.json();
-            setDataPayload(json);
 
-            // Compute % changes
+            const json = await resp.json();
+            setFullHistory(json.history || []);
+            setPredictions(json.predictions || []);
+            setTechnicalInfo(json.technical_info || {});
+
+            // compute percent changes based on full history
             if (json.history && json.history.length > 1) {
-                const closes = json.history.map((h) => h.close);
+                const closes = json.history.map(h => h.close);
                 const newChanges = {};
-                periods.forEach((p) => {
-                    if (closes.length > 1) {
-                        const index = Math.max(closes.length - p.days, 0);
-                        const pastPrice = closes[index];
-                        const lastPrice = closes[closes.length - 1];
-                        if (pastPrice && lastPrice) {
-                            const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
-                            newChanges[p.value] = pct;
-                        }
+                periods.forEach(p => {
+                    const index = Math.max(closes.length - p.days, 0);
+                    const pastPrice = closes[index];
+                    const lastPrice = closes[closes.length - 1];
+                    if (pastPrice && lastPrice) {
+                        const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
+                        newChanges[p.value] = pct;
                     }
                 });
                 setPeriodChanges(newChanges);
             }
         } catch (err) {
             setError(err.message);
-            setDataPayload(null);
+            setFullHistory([]);
+            setPredictions([]);
         } finally {
             setLoading(false);
         }
     }
 
-    // fetch news
+    /** Slice full history based on selected range **/
+    useEffect(() => {
+        if (fullHistory.length > 0) {
+            const cutoff = getCutoffDate(range);
+            const filtered = fullHistory.filter(h => new Date(h.date) >= cutoff);
+            setFilteredHistory(filtered);
+        }
+    }, [range, fullHistory]);
+
+    /** Fetch data when ticker or predictionType changes **/
+    useEffect(() => {
+        fetchFullHistory();
+        fetchNews();
+        fetchOverview();
+    }, [ticker, predictionType]);
+
+    /** Fetch news **/
     async function fetchNews() {
         setNewsLoading(true);
         try {
-            const res = await fetch(
-                `http://localhost:5001/api/stocks/news?ticker=${ticker}`
-            );
-            if (!res.ok) throw new Error(`Failed to fetch news`);
+            const res = await fetch(`http://localhost:5001/api/stocks/news?ticker=${ticker}`);
             const json = await res.json();
             setNews(json.articles || []);
-        } catch (err) {
-            console.error('News fetch error:', err);
+        } catch {
             setNews([]);
         } finally {
             setNewsLoading(false);
         }
     }
 
-    // fetch overview
+    /** Fetch overview **/
     async function fetchOverview() {
         setOverviewLoading(true);
         try {
-            const res = await fetch(
-                `http://localhost:5001/api/stocks/overview?ticker=${ticker}`
-            );
-            if (!res.ok) throw new Error(`Failed to fetch overview`);
+            const res = await fetch(`http://localhost:5001/api/stocks/overview?ticker=${ticker}`);
             const json = await res.json();
             setOverview(json);
-        } catch (err) {
-            console.error('Overview fetch error:', err);
+        } catch {
             setOverview(null);
         } finally {
             setOverviewLoading(false);
         }
     }
 
-    // refetch on change
-    useEffect(() => {
-        console.log("Fetching data for:", { ticker, range })
-        fetchData();
-        fetchNews();
-        fetchOverview();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ticker, range, predictionType]);
-
+    /** Chart data **/
     const chartData = useMemo(() => {
-        if (!dataPayload) return null;
-        const hist = dataPayload.history || [];
-        const preds = dataPayload.predictions || [];
+        if (filteredHistory.length === 0) return null;
+        const histData = filteredHistory.map(h => ({ x: h.date, y: h.close }));
+        const predData = predictions.map(p => ({ x: p.date, y: p.predicted_close }));
 
-        const histData = hist.map((h) => ({ x: h.date, y: h.close }));
-        const predData = preds.map((p) => ({ x: p.date, y: p.predicted_close }));
-
-        // Fix gap: connect last history to first prediction
+        // smooth red connection line from last history to first prediction
         if (histData.length > 0 && predData.length > 0) {
             const lastHist = histData[histData.length - 1];
             const firstPred = predData[0];
@@ -175,24 +185,20 @@ export default function StocksDashboard() {
                     tension: 0.2,
                     pointRadius: 2,
                     borderWidth: 2,
-                    borderColor: darkMode
-                        ? 'rgba(100, 181, 246, 1)'
-                        : 'rgba(33, 133, 208, 1)',
+                    borderColor: darkMode ? 'rgba(100, 181, 246, 1)' : 'rgba(33, 133, 208, 1)',
                 },
                 {
                     label: 'Predicted Close',
                     data: predData,
                     tension: 0.2,
-                    pointRadius: 4,
+                    pointRadius: 3,
                     borderWidth: 2,
                     borderDash: [8, 6],
-                    borderColor: darkMode
-                        ? 'rgba(239, 83, 80, 1)'
-                        : 'rgba(220, 78, 65, 1)',
+                    borderColor: darkMode ? 'rgba(239, 83, 80, 1)' : 'rgba(220, 78, 65, 1)',
                 },
             ],
         };
-    }, [dataPayload, darkMode]);
+    }, [filteredHistory, predictions, darkMode]);
 
     const chartOptions = {
         responsive: true,
@@ -200,10 +206,9 @@ export default function StocksDashboard() {
             tooltip: {
                 mode: 'nearest',
                 callbacks: {
-                    label: function (context) {
+                    label: (context) => {
                         const val = context.parsed.y;
-                        return `${context.dataset.label}: $${val != null ? val.toFixed(2) : 'N/A'
-                            }`;
+                        return `${context.dataset.label}: $${val != null ? val.toFixed(2) : 'N/A'}`;
                     },
                 },
             },
@@ -229,8 +234,9 @@ export default function StocksDashboard() {
             <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
                 <select value={ticker} onChange={(e) => setTicker(e.target.value)}>
                     <option value="MSFT">Microsoft</option>
-                    <option value="T">AT&T</option>
+                    <option value="AAPL">Apple</option>
                     <option value="IBM">IBM</option>
+                    <option value="T">AT&T</option>
                 </select>
 
                 <label>
@@ -238,28 +244,23 @@ export default function StocksDashboard() {
                         type="radio"
                         checked={predictionType === 'daily'}
                         onChange={() => setPredictionType('daily')}
-                    />{' '}
-                    Daily
+                    /> Daily
                 </label>
                 <label>
                     <input
                         type="radio"
                         checked={predictionType === 'monthly'}
                         onChange={() => setPredictionType('monthly')}
-                    />{' '}
-                    Monthly
+                    /> Monthly
                 </label>
             </div>
 
             {/* Range cubes */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                {console.log("periods", periods)}
                 {periods.map((p) => {
                     const isActive = range === p.value;
                     const pct = periodChanges[p.value];
-                    const pctText =
-                        pct !== undefined ? `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
-
+                    const pctText = pct !== undefined ? `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
                     return (
                         <div
                             key={p.value}
@@ -271,12 +272,8 @@ export default function StocksDashboard() {
                                 textAlign: 'center',
                                 cursor: 'pointer',
                                 backgroundColor: isActive
-                                    ? darkMode
-                                        ? '#333'
-                                        : '#e3f2fd'
-                                    : darkMode
-                                        ? '#1e1e1e'
-                                        : '#fff',
+                                    ? darkMode ? '#333' : '#e3f2fd'
+                                    : darkMode ? '#1e1e1e' : '#fff',
                                 border: isActive
                                     ? '2px solid #2196f3'
                                     : '1px solid rgba(0,0,0,0.1)',
@@ -303,7 +300,7 @@ export default function StocksDashboard() {
                 })}
             </div>
 
-            {/* Tabs: Chart / News / Overview */}
+            {/* Tabs */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
                 {['chart', 'news', 'overview'].map((tab) => (
                     <button
@@ -314,8 +311,7 @@ export default function StocksDashboard() {
                             borderRadius: '6px',
                             border: activeTab === tab ? '2px solid #2196f3' : '1px solid #ccc',
                             background: activeTab === tab ? '#2196f3' : 'transparent',
-                            color:
-                                activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111',
+                            color: activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111',
                             cursor: 'pointer',
                         }}
                     >
@@ -328,14 +324,15 @@ export default function StocksDashboard() {
             {activeTab === 'chart' && (
                 <>
                     {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+                    {loading && <div>Loading…</div>}
 
-                    {dataPayload && (
-                        <div>
+                    {!loading && filteredHistory.length > 0 && (
+                        <>
                             <div style={{ marginBottom: 12 }}>
                                 <strong>Technical Info:</strong>
-                                <div>Last Close: ${dataPayload.technical_info.last_close}</div>
-                                <div>Last Open: ${dataPayload.technical_info.last_open}</div>
-                                <div>Last Volume: {dataPayload.technical_info.last_volume}</div>
+                                <div>Last Close: ${technicalInfo.last_close}</div>
+                                <div>Last Open: ${technicalInfo.last_open}</div>
+                                <div>Last Volume: {technicalInfo.last_volume}</div>
                             </div>
 
                             <div style={{ height: 500 }}>
@@ -349,17 +346,13 @@ export default function StocksDashboard() {
                             <div style={{ marginTop: 12 }}>
                                 <strong>Predictions:</strong>
                                 <ul>
-                                    {(dataPayload.predictions || []).map((p, idx) => (
-                                        <li key={idx}>
-                                            {p.date} — ${p.predicted_close.toFixed(2)}
-                                        </li>
+                                    {predictions.map((p, idx) => (
+                                        <li key={idx}>{p.date} — ${p.predicted_close.toFixed(2)}</li>
                                     ))}
                                 </ul>
                             </div>
-                        </div>
+                        </>
                     )}
-
-                    {loading && <div>Loading…</div>}
                 </>
             )}
 
@@ -370,14 +363,7 @@ export default function StocksDashboard() {
                     {!newsLoading && news.length === 0 && <div>No news available.</div>}
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {news.map((article, idx) => (
-                            <li
-                                key={idx}
-                                style={{
-                                    padding: '10px',
-                                    borderBottom: '1px solid #ddd',
-                                    marginBottom: '8px',
-                                }}
-                            >
+                            <li key={idx} style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>
                                 <a
                                     href={article.url}
                                     target="_blank"
@@ -411,7 +397,12 @@ export default function StocksDashboard() {
                             <p><strong>Sector:</strong> {overview.sector}</p>
                             <p><strong>Industry:</strong> {overview.industry}</p>
                             <p><strong>Market Cap:</strong> {overview.marketCap}</p>
-                            <p><strong>Website:</strong> <a href={overview.website} target="_blank" rel="noreferrer">{overview.website}</a></p>
+                            <p>
+                                <strong>Website:</strong>{' '}
+                                <a href={overview.website} target="_blank" rel="noreferrer">
+                                    {overview.website}
+                                </a>
+                            </p>
                         </div>
                     )}
                 </div>
