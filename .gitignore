@@ -4,7 +4,6 @@
 /node_modules
 /server/node_modules
 /server/ml/ml_models
-/server/config
 /.pnp
 .pnp.js
 

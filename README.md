@@ -1,86 +1,81 @@
-# Getting Started with Create React App
+# 📈 Stock Vision
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Full-stack stock analysis and prediction platform with:
+- **Frontend** (React + Chart.js + Dark Mode support)
+- **Backend** (Node.js + Express + MongoDB)
+- **ML Service** (FastAPI + TensorFlow/PyTorch + yFinance)
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Features
 
-### `npm start`
+- User authentication (JWT + email verification)
+- Trending stocks (via Finnhub API)
+- Stock history & predictions (via FastAPI ML service)
+- Interactive charts with multiple ranges
+- News & company overview tabs
+- Daily auto-updated ML models via notebook training
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📂 Project Structure
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-# Getting started with prediction API
+stock-vision/
+│
+├── client/ # React frontend
+├── server/ # Node.js backend
+│ ├── routes/ # API routes (users, stocks, stock-history)
+│ └── ml/ # FastAPI ML service
+│ ├── ml_models # Saved models
+│ ├── notebooks # Training notebooks
+│ └── requirements.txt
+└── README.md
 
 
-Run the notebook server\ml\MSFT_Model_Daily_Monthly.ipynb
+---
+
+## ⚙️ Installation
+
+### Clone repository
 
 ```bash
-
-cd server/ml
-uvicorn ml_service:app --reload --port 8000
-
-
+git clone https://github.com/ArielGolanski/stock-vision.git
+cd stock-vision
 ```
 
-Run the server and send GET request. For example:
-`http://localhost:5001/api/stocks/predict/MSFT?target=Monthly%20Change%20%25&days=5`
+## ▶ Deployment
+
+### 1. Run server
+```bash
+cd server
+```
+Run on server folder:
+```bash
+npm install
+npm start
+```
+
+### 2. Train model
+
+```bash
+cd ml
+pip install -r requirements.txt
+papermill papermill notebooks/Models_Daily_Monthly.ipynb notebooks/Models_Daily_Monthly.ipynb --force
+```
+
+### 3. Run predictions model
+Run on server/ml folder:
+```bash
+uvicorn ml_service:app --reload --port 8000
+```
+
+### 4. Run frontend
+```bash
+cd..
+cd..
+```
+Run on root folder:
+```bash
+npm install
+npm start
+```
