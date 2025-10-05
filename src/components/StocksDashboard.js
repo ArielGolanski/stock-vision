@@ -153,6 +153,7 @@ export default function StocksDashboard() {
         fetchFullHistory();
         fetchNews();
         fetchOverview();
+        fetchComments();
     }, [ticker, predictionType]);
 
     /** Fetch news **/
@@ -181,6 +182,113 @@ export default function StocksDashboard() {
         } finally {
             setOverviewLoading(false);
         }
+    }
+
+    async function fetchComments() {
+        setCommentsLoading(true);
+        setCommentError(null);
+        try {
+            const res = await fetch(
+                `http://localhost:5001/api/comments?ticker=${ticker}`
+            );
+            if (!res.ok) throw new Error(`Failed to fetch comments`);
+            const json = await res.json();
+            setComments(json.comments || []);
+        } catch (err) {
+            console.error('Comments fetch error:', err);
+            setCommentError(err.message);
+            setComments([]);
+        } finally {
+            setCommentsLoading(false);
+        }
+    }
+
+    async function handleSubmitComment(e) {
+        e.preventDefault();
+        if (!newComment.trim()) return;
+
+        setSubmitting(true);
+        setCommentError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please log in to comment');
+            }
+
+            const res = await fetch('http://localhost:5001/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ticker,
+                    content: newComment
+                })
+            });
+
+            if (!res.ok) {
+                const errBody = await res.json();
+                throw new Error(errBody.message || 'Failed to post comment');
+            }
+
+            setNewComment('');
+            await fetchComments();
+        } catch (err) {
+            console.error('Comment submission error:', err);
+            setCommentError(err.message);
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    async function handleDeleteComment(commentId) {
+        if (!window.confirm('Are you sure you want to delete this comment?')) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please log in to delete comments');
+            }
+
+            const res = await fetch(`http://localhost:5001/api/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const errBody = await res.json();
+                throw new Error(errBody.message || 'Failed to delete comment');
+            }
+
+            await fetchComments();
+        } catch (err) {
+            console.error('Comment deletion error:', err);
+            alert(err.message);
+        }
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        });
     }
 
     /** Chart data **/
@@ -301,7 +409,7 @@ export default function StocksDashboard() {
 
             {/* Tabs */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-                {['chart', 'news', 'overview'].map((tab) => (
+                {['chart', 'news', 'overview', 'discussion'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -399,7 +507,7 @@ export default function StocksDashboard() {
             {activeTab === 'discussion' && (
                 <div>
                     <h3 style={{ marginBottom: '16px' }}>Discussion for {ticker}</h3>
-                    
+
                     <div style={{ marginBottom: '24px' }}>
                         <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Share your thoughts about this stock..." maxLength={1000} style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: `1px solid ${darkMode ? '#444' : '#ccc'}`, background: darkMode ? '#1e1e1e' : '#fff', color: darkMode ? '#f1f1f1' : '#111', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }} />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
