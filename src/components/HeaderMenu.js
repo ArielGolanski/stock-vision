@@ -21,7 +21,7 @@ export default function HeaderMenu() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 padding: "12px 20px",
-                background: darkMode ? "#121212" : "#ffffff",
+                background: darkMode ? "#2e2e2eff" : "#ffffff",
                 color: darkMode ? "#f1f1f1" : "#111",
                 borderBottom: darkMode ? "1px solid #333" : "1px solid #ddd",
                 position: "relative",

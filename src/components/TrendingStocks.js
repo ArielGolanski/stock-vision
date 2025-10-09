@@ -245,7 +245,7 @@ const TrendingStocks = () => {
         <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px', backgroundColor: darkMode ? '#111827' : '#ffffff' }}>
           <h3 style={{
             color: '#059669',
-            backgroundColor: darkMode ? '#064e3b' : '#d1fae5',
+            backgroundColor: darkMode ? '#2e2e2eff' : '#d1fae5',
             borderBottom: '2px solid #059669',
             paddingBottom: '8px',
             marginBottom: '16px'
@@ -270,7 +270,7 @@ const TrendingStocks = () => {
             borderBottom: '2px solid #dc2626',
             paddingBottom: '8px',
             marginBottom: '16px',
-            backgroundColor: darkMode ? '#7f1d1d' : '#fee2e2'
+            backgroundColor: darkMode ? '#2e2e2eff' : '#fee2e2'
           }}>
             📉 Top Losers
           </h3>

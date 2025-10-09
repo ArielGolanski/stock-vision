@@ -25,6 +25,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
     "nodemailer": "^7.0.6",
+    "sentiment": "^5.0.2",
+    "snoowrap": "^1.23.0",
     "ws": "^8.18.3",
     "yahoo-finance2": "^2.13.3"
   }
