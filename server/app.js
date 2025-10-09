@@ -30,6 +30,9 @@ app.use('/api/stocks', stocksRoutes);
 const stockHistoryRoutes = require('./routes/stockHistory');
 app.use('/api/stock-history', stockHistoryRoutes);
 
+const hypeRoutes = require('./routes/hype');
+app.use('/api', hypeRoutes);
+
 // Root check
 app.get('/', (_, res) => res.send('Server is running 🚀'));
 

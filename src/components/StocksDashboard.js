@@ -1,4 +1,3 @@
-// client/src/components/StocksDashboard.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -32,10 +31,7 @@ export default function StocksDashboard() {
     const [ticker, setTicker] = useState('MSFT');
     const [range, setRange] = useState('1y');
     const [predictionType, setPredictionType] = useState('daily');
-    const [fullHistory, setFullHistory] = useState([]); // always 10 years
-    const [filteredHistory, setFilteredHistory] = useState([]);
-    const [predictions, setPredictions] = useState([]);
-    const [technicalInfo, setTechnicalInfo] = useState({});
+    const [dataPayload, setDataPayload] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [periodChanges, setPeriodChanges] = useState({});
@@ -44,6 +40,11 @@ export default function StocksDashboard() {
     const [overview, setOverview] = useState(null);
     const [newsLoading, setNewsLoading] = useState(false);
     const [overviewLoading, setOverviewLoading] = useState(false);
+
+    // HypeMeter state
+    const [hypeData, setHypeData] = useState(null);
+    const [hypeLoading, setHypeLoading] = useState(false);
+    const [hypeTimeframe, setHypeTimeframe] = useState('day');
 
     // Discussion state
     const [comments, setComments] = useState([]);
@@ -77,107 +78,77 @@ export default function StocksDashboard() {
         { label: '10Y', value: '10y', days: 2520 },
     ];
 
-    /** Helper: get cutoff date by range **/
-    function getCutoffDate(range) {
-        const d = new Date();
-        switch (range) {
-            case '1d': d.setDate(d.getDate() - 1); break;
-            case '1w': d.setDate(d.getDate() - 7); break;
-            case '1mo': d.setMonth(d.getMonth() - 1); break;
-            case '6mo': d.setMonth(d.getMonth() - 6); break;
-            case '1y': d.setFullYear(d.getFullYear() - 1); break;
-            case '3y': d.setFullYear(d.getFullYear() - 3); break;
-            case '5y': d.setFullYear(d.getFullYear() - 5); break;
-            default: d.setFullYear(d.getFullYear() - 10);
-        }
-        return d;
-    }
-
-    /** Fetch 10y history once per ticker **/
-    async function fetchFullHistory() {
+    async function fetchData() {
         setLoading(true);
         setError(null);
         try {
             const params = new URLSearchParams({
                 ticker,
-                range: '10y',
+                range,
                 predictionType,
             });
-
-            const resp = await fetch(`http://localhost:5001/api/stock-history?${params.toString()}`);
+            const resp = await fetch(
+                `http://localhost:5001/api/stock-history?${params.toString()}`
+            );
             if (!resp.ok) {
                 const errBody = await resp.json().catch(() => ({}));
                 throw new Error(errBody.error || `HTTP ${resp.status}`);
             }
-
             const json = await resp.json();
-            setFullHistory(json.history || []);
-            setPredictions(json.predictions || []);
-            setTechnicalInfo(json.technical_info || {});
+            setDataPayload(json);
 
-            // compute percent changes based on full history
             if (json.history && json.history.length > 1) {
-                const closes = json.history.map(h => h.close);
+                const closes = json.history.map((h) => h.close);
                 const newChanges = {};
-                periods.forEach(p => {
-                    const index = Math.max(closes.length - p.days, 0);
-                    const pastPrice = closes[index];
-                    const lastPrice = closes[closes.length - 1];
-                    if (pastPrice && lastPrice) {
-                        const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
-                        newChanges[p.value] = pct;
+                periods.forEach((p) => {
+                    if (closes.length > 1) {
+                        const index = Math.max(closes.length - p.days, 0);
+                        const pastPrice = closes[index];
+                        const lastPrice = closes[closes.length - 1];
+                        if (pastPrice && lastPrice) {
+                            const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
+                            newChanges[p.value] = pct;
+                        }
                     }
                 });
                 setPeriodChanges(newChanges);
             }
         } catch (err) {
             setError(err.message);
-            setFullHistory([]);
-            setPredictions([]);
+            setDataPayload(null);
         } finally {
             setLoading(false);
         }
     }
 
-    /** Slice full history based on selected range **/
-    useEffect(() => {
-        if (fullHistory.length > 0) {
-            const cutoff = getCutoffDate(range);
-            const filtered = fullHistory.filter(h => new Date(h.date) >= cutoff);
-            setFilteredHistory(filtered);
-        }
-    }, [range, fullHistory]);
-
-    /** Fetch data when ticker or predictionType changes **/
-    useEffect(() => {
-        fetchFullHistory();
-        fetchNews();
-        fetchOverview();
-        fetchComments();
-    }, [ticker, predictionType]);
-
-    /** Fetch news **/
     async function fetchNews() {
         setNewsLoading(true);
         try {
-            const res = await fetch(`http://localhost:5001/api/stocks/news?ticker=${ticker}`);
+            const res = await fetch(
+                `http://localhost:5001/api/stocks/news?ticker=${ticker}`
+            );
+            if (!res.ok) throw new Error(`Failed to fetch news`);
             const json = await res.json();
             setNews(json.articles || []);
-        } catch {
+        } catch (err) {
+            console.error('News fetch error:', err);
             setNews([]);
         } finally {
             setNewsLoading(false);
         }
     }
 
-    /** Fetch overview **/
     async function fetchOverview() {
         setOverviewLoading(true);
         try {
-            const res = await fetch(`http://localhost:5001/api/stocks/overview?ticker=${ticker}`);
+            const res = await fetch(
+                `http://localhost:5001/api/stocks/overview?ticker=${ticker}`
+            );
+            if (!res.ok) throw new Error(`Failed to fetch overview`);
             const json = await res.json();
             setOverview(json);
-        } catch {
+        } catch (err) {
+            console.error('Overview fetch error:', err);
             setOverview(null);
         } finally {
             setOverviewLoading(false);
@@ -200,6 +171,24 @@ export default function StocksDashboard() {
             setComments([]);
         } finally {
             setCommentsLoading(false);
+        }
+    }
+
+    // Fetch Hype Data
+    async function fetchHypeData() {
+        setHypeLoading(true);
+        setHypeData(null);
+        try {
+            const res = await fetch(
+                `http://localhost:5001/api/hypemeter?ticker=${ticker}&timeframe=${hypeTimeframe}`
+            );
+            if (!res.ok) throw new Error(`Failed to fetch hype data`);
+            const json = await res.json();
+            setHypeData(json);
+        } catch (err) {
+            console.error('Hype fetch error:', err);
+        } finally {
+            setHypeLoading(false);
         }
     }
 
@@ -283,28 +272,41 @@ export default function StocksDashboard() {
         if (diffMins < 60) return `${diffMins}m ago`;
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
-
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        
+        return date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined 
         });
     }
 
-    /** Chart data **/
-    const chartData = useMemo(() => {
-        if (filteredHistory.length === 0) return null;
-        const histData = filteredHistory.map(h => ({ x: h.date, y: h.close }));
-        const predData = predictions.map(p => ({ x: p.date, y: p.predicted_close }));
+    function formatTime(dateString) {
+        return new Date(dateString).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
 
-        // smooth red connection line from last history to first prediction
-        if (histData.length > 0 && predData.length > 0) {
-            const lastHist = histData[histData.length - 1];
-            const firstPred = predData[0];
-            if (lastHist.x !== firstPred.x) {
-                predData.unshift({ x: lastHist.x, y: lastHist.y });
-            }
-        }
+    useEffect(() => {
+        fetchData();
+        fetchNews();
+        fetchOverview();
+        fetchComments();
+    }, [ticker, range, predictionType]);
+
+    // Fetch Hype Data when ticker or timeframe changes
+    useEffect(() => {
+        fetchHypeData();
+    }, [ticker, hypeTimeframe]);
+
+    const chartData = useMemo(() => {
+        if (!dataPayload) return null;
+        const hist = dataPayload.history || [];
+        const preds = dataPayload.predictions || [];
+
+        const histData = hist.map((h) => ({ x: h.date, y: h.close }));
+        const predData = preds.map((p) => ({ x: p.date, y: p.predicted_close }));
 
         return {
             datasets: [
@@ -320,14 +322,14 @@ export default function StocksDashboard() {
                     label: 'Predicted Close',
                     data: predData,
                     tension: 0.2,
-                    pointRadius: 3,
+                    pointRadius: 4,
                     borderWidth: 2,
                     borderDash: [8, 6],
                     borderColor: darkMode ? 'rgba(239, 83, 80, 1)' : 'rgba(220, 78, 65, 1)',
                 },
             ],
         };
-    }, [filteredHistory, predictions, darkMode]);
+    }, [dataPayload, darkMode]);
 
     const chartOptions = {
         responsive: true,
@@ -335,9 +337,9 @@ export default function StocksDashboard() {
             tooltip: {
                 mode: 'nearest',
                 callbacks: {
-                    label: (context) => {
+                    label: function (context) {
                         const val = context.parsed.y;
-                        return `${context.dataset.label}: $${val != null ? val.toFixed(2) : 'N/A'}`;
+                        return `${context.dataset.label}: ${val != null ? val.toFixed(2) : 'N/A'}`;
                     },
                 },
             },
@@ -349,80 +351,38 @@ export default function StocksDashboard() {
         },
     };
 
+    const hypeTimeframes = [
+        { label: 'Past Day', value: 'day' },
+        { label: 'Past Week', value: 'week' },
+        { label: 'Past Month', value: 'month' },
+    ];
+
+
     return (
-        <div style={{ padding: 20, background: darkMode ? '#121212' : '#fafafa', color: darkMode ? '#f1f1f1' : '#111', borderRadius: '8px' }}>
+        <div style={{ padding: 20, background: darkMode ? '#2e2e2eff' : '#fafafa', color: darkMode ? '#f1f1f1' : '#111', borderRadius: '8px' }}>
             <h2>Stocks Dashboard</h2>
 
             <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
                 <select value={ticker} onChange={(e) => setTicker(e.target.value)}>
                     <option value="MSFT">Microsoft</option>
-                    <option value="AAPL">Apple</option>
-                    <option value="IBM">IBM</option>
                     <option value="T">AT&T</option>
+                    <option value="IBM">IBM</option>
                 </select>
 
                 <label>
-                    <input
-                        type="radio"
-                        checked={predictionType === 'daily'}
-                        onChange={() => setPredictionType('daily')}
-                    /> Daily
+                    <input type="radio" checked={predictionType === 'daily'} onChange={() => setPredictionType('daily')} /> Daily
                 </label>
                 <label>
-                    <input
-                        type="radio"
-                        checked={predictionType === 'monthly'}
-                        onChange={() => setPredictionType('monthly')}
-                    /> Monthly
+                    <input type="radio" checked={predictionType === 'monthly'} onChange={() => setPredictionType('monthly')} /> Monthly
                 </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                {periods.map((p) => {
-                    const isActive = range === p.value;
-                    const pct = periodChanges[p.value];
-                    const pctText = pct !== undefined ? `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
-                    return (
-                        <div
-                            key={p.value}
-                            onClick={() => setRange(p.value)}
-                            style={{
-                                flex: 1,
-                                padding: '10px',
-                                borderRadius: '6px',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                backgroundColor: isActive
-                                    ? darkMode ? '#333' : '#e3f2fd'
-                                    : darkMode ? '#1e1e1e' : '#fff',
-                                border: isActive
-                                    ? '2px solid #2196f3'
-                                    : '1px solid rgba(0,0,0,0.1)',
-                            }}
-                        >
-                            <div style={{ fontWeight: 'bold' }}>{p.label}</div>
-                            <div style={{ fontSize: '12px', color: pct > 0 ? '#059669' : pct < 0 ? '#dc2626' : darkMode ? '#aaa' : '#666' }}>{pctText}</div>
-                        </div>
-                    );
-                })}
-            </div>
+            
 
-            {/* Tabs */}
             <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-                {['chart', 'news', 'overview', 'discussion'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        style={{
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            border: activeTab === tab ? '2px solid #2196f3' : '1px solid #ccc',
-                            background: activeTab === tab ? '#2196f3' : 'transparent',
-                            color: activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {['chart', 'news', 'overview', 'discussion', 'hype'].map((tab) => (
+                    <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '6px 12px', borderRadius: '6px', border: activeTab === tab ? '2px solid #2196f3' : '1px solid #ccc', background: activeTab === tab ? '#2196f3' : 'transparent', color: activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
+                        {tab === 'hype' ? 'HypeMeter' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
                 ))}
             </div>
@@ -430,29 +390,42 @@ export default function StocksDashboard() {
             {activeTab === 'chart' && (
                 <>
                     {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-                    {loading && <div>Loading…</div>}
-
-                    {!loading && filteredHistory.length > 0 && (
-                        <>
+                    {dataPayload && (
+                        <div>
                             <div style={{ marginBottom: 12 }}>
                                 <strong>Technical Info:</strong>
-                                <div>Last Close: ${technicalInfo.last_close}</div>
-                                <div>Last Open: ${technicalInfo.last_open}</div>
-                                <div>Last Volume: {technicalInfo.last_volume}</div>
+                                <div>Last Close: ${dataPayload.technical_info.last_close}</div>
+                                <div>Last Open: ${dataPayload.technical_info.last_open}</div>
+                                <div>Last Volume: {dataPayload.technical_info.last_volume}</div>
                             </div>
                             <div style={{ height: 500 }}>
                                 {chartData ? <Line data={chartData} options={chartOptions} /> : <div>No chart data</div>}
                             </div>
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                {periods.map((p) => {
+                                    const isActive = range === p.value;
+                                    const pct = periodChanges[p.value];
+                                    const pctText = pct !== undefined ? `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
+
+                                    return (
+                                        <div key={p.value} onClick={() => setRange(p.value)} style={{ flex: 1, padding: '10px', borderRadius: '6px', textAlign: 'center', cursor: 'pointer', backgroundColor: isActive ? (darkMode ? '#333' : '#e3f2fd') : (darkMode ? '#1e1e1e' : '#fff'), border: isActive ? '2px solid #2196f3' : '1px solid rgba(0,0,0,0.1)' }}>
+                                        <div style={{ fontWeight: 'bold' }}>{p.label}</div>
+                                        <div style={{ fontSize: '12px', color: pct > 0 ? '#059669' : pct < 0 ? '#dc2626' : darkMode ? '#aaa' : '#666' }}>{pctText}</div>
+                                        </div>
+                                            );
+                                    })}
+                            </div>
                             <div style={{ marginTop: 12 }}>
                                 <strong>Predictions:</strong>
                                 <ul>
-                                    {predictions.map((p, idx) => (
+                                    {(dataPayload.predictions || []).map((p, idx) => (
                                         <li key={idx}>{p.date} — ${p.predicted_close.toFixed(2)}</li>
                                     ))}
                                 </ul>
                             </div>
-                        </>
+                        </div>
                     )}
+                    {loading && <div>Loading…</div>}
                 </>
             )}
 
@@ -462,17 +435,8 @@ export default function StocksDashboard() {
                     {!newsLoading && news.length === 0 && <div>No news available.</div>}
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {news.map((article, idx) => (
-                            <li key={idx} style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>
-                                <a
-                                    href={article.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                        color: darkMode ? '#90caf9' : '#1a0dab',
-                                        fontWeight: 'bold',
-                                        textDecoration: 'none',
-                                    }}
-                                >
+                            <li key={idx} style={{ padding: '10px', borderBottom: '1px solid #ddd', marginBottom: '8px' }}>
+                                <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? '#90caf9' : '#1a0dab', fontWeight: 'bold', textDecoration: 'none' }}>
                                     {article.headline}
                                 </a>
                                 <div style={{ fontSize: '12px', color: '#666' }}>{article.source} — {article.date}</div>
@@ -493,21 +457,125 @@ export default function StocksDashboard() {
                             <p><strong>Sector:</strong> {overview.sector}</p>
                             <p><strong>Industry:</strong> {overview.industry}</p>
                             <p><strong>Market Cap:</strong> {overview.marketCap}</p>
-                            <p>
-                                <strong>Website:</strong>{' '}
-                                <a href={overview.website} target="_blank" rel="noreferrer">
-                                    {overview.website}
-                                </a>
-                            </p>
+                            <p><strong>Website:</strong> <a href={overview.website} target="_blank" rel="noreferrer">{overview.website}</a></p>
                         </div>
                     )}
                 </div>
             )}
+            
+            {/* HypeMeter Tab Content */}
+            {activeTab === 'hype' && (
+                <div>
+                    <h3 style={{ marginBottom: '16px' }}>HypeMeter for ${ticker}</h3>
 
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                        {hypeTimeframes.map((tf) => (
+                            <button key={tf.value} onClick={() => setHypeTimeframe(tf.value)} style={{ padding: '6px 12px', borderRadius: '6px', border: hypeTimeframe === tf.value ? '2px solid #2196f3' : '1px solid #ccc', background: hypeTimeframe === tf.value ? '#2196f3' : 'transparent', color: hypeTimeframe === tf.value ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
+                                {tf.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {hypeLoading && <div>Loading hype data...</div>}
+                    {!hypeLoading && !hypeData && <div>Failed to load hype data.</div>}
+
+                    {hypeData && (
+                        <>
+                            
+
+                            <div style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
+                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: hypeData.hypeLevel.color }}>
+                                        {hypeData.hypeLevel.label}
+                                    </div>
+                                    <div style={{ fontSize: '48px', fontWeight: 'extrabold', color: hypeData.hypeLevel.color, margin: '10px 0' }}>
+                                        {hypeData.hypeScore}%
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>
+                                        Hype Score for the {hypeData.timeframe} (Reddit)
+                                    </div>
+                                </div>
+                                
+                                <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{hypeData.mentions}</div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Mentions</div>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#059669' }}>{hypeData.sentiment.positive.toFixed(1)}%</div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Positive</div>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc2626' }}>{hypeData.sentiment.negative.toFixed(1)}%</div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Negative</div>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{hypeData.sentiment.averageScore.toFixed(2)}</div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Avg. Sentiment</div>
+                                    </div>
+                                </div>
+
+                                <h4 style={{ borderTop: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, paddingTop: '16px', marginBottom: '10px' }}>Top Posts</h4>
+                                <ul style={{ listStyle: 'none', padding: 0 }}>
+                                    {hypeData.topPosts.map((post, idx) => (
+                                        <li key={idx} style={{ marginBottom: '10px', borderBottom: `1px dotted ${darkMode ? '#222' : '#f0f0f0'}`, paddingBottom: '8px' }}>
+                                            <a href={post.url} target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? '#90caf9' : '#1a0dab', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+                                                {post.title}
+                                            </a>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666', marginTop: '4px' }}>
+                                                <span style={{ color: post.sentiment === 'positive' ? '#059669' : post.sentiment === 'negative' ? '#dc2626' : '#ffaa00', fontWeight: 'bold' }}>
+                                                    {post.sentiment.toUpperCase()}
+                                                </span>
+                                                {' | '}
+                                                r/{post.subreddit}
+                                                {' | '}
+                                                Score: {post.score}
+                                                {' | '}
+                                                Comments: {post.numComments}
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <div style={{ fontSize: '10px', color: darkMode ? '#555' : '#999', marginTop: '16px', textAlign: 'right' }}>
+                                    Data last updated: {new Date(hypeData.lastUpdated).toLocaleString()}
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', background: darkMode ? '#282828' : '#e0f7fa', border: `1px solid ${darkMode ? '#444' : '#b2ebf2'}` }}>
+                                <h4 style={{ margin: '0 0 10px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                                    💡 How the Hype Score is Calculated
+                                </h4>
+                                <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '1.4', color: darkMode ? '#ccc' : '#444' }}>
+                                    The Hype Score (0-100%) is calculated by aggregating data from top finance subreddits ({hypeData.timeframe} timeframe) based on four weighted factors:
+                                </p>
+                                <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '13px', color: darkMode ? '#ccc' : '#444' }}>
+                                    <li>Mention Score (Max 30%): Based on the sheer volume of posts mentioning the ticker.</li>
+                                    <li>Sentiment Score (Max 40%): Calculated from the net positive vs. negative sentiment of all analyzed posts.</li>
+                                    <li>Engagement Score (Max 20%): Measures the average upvotes and comments on the top posts, indicating user interaction.</li>
+                                    <li>Trend Score (Max 10%): Weighs posts from the last 6 hours more heavily to capture recent activity.</li>
+                                </ul>
+                                {/* START: Added Sentiment Score Explanation */}
+                                <h5 style={{ margin: '15px 0 5px 0', color: darkMode ? '#90caf9' : '#0097a7', fontSize: '13px' }}>
+                                    Details: Individual Post Sentiment Score
+                                </h5>
+                                <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '12px', color: darkMode ? '#bbb' : '#555' }}>
+                                    <li>Lexicon: Sentiment is determined using the AFINN-165 wordlist (over 3,300 emotional words).</li>
+                                    <li>Word Scoring: Each recognized word is assigned a fixed score from -5 (negative) to +5 (positive).</li>
+                                    <li>Calculation: The post's total `sentimentScore` is the sum of all scores of the emotional words found in its title and body.</li>
+                                </ul>
+                                {/* END: Added Sentiment Score Explanation */}
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* Existing Discussion Tab Content */}
             {activeTab === 'discussion' && (
                 <div>
                     <h3 style={{ marginBottom: '16px' }}>Discussion for {ticker}</h3>
-
+                    
                     <div style={{ marginBottom: '24px' }}>
                         <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Share your thoughts about this stock..." maxLength={1000} style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: `1px solid ${darkMode ? '#444' : '#ccc'}`, background: darkMode ? '#1e1e1e' : '#fff', color: darkMode ? '#f1f1f1' : '#111', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }} />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>

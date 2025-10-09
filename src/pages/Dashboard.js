@@ -44,7 +44,7 @@ const Dashboard = () => {
   return (
     <div
       style={{
-        backgroundColor: darkMode ? '#121212' : '#f9fafb',
+        backgroundColor: darkMode ? '#2e2e2eff' : '#f9fafb',
         color: darkMode ? '#e5e5e5' : '#111',
         minHeight: '100vh',
         transition: 'all 0.25s ease',
