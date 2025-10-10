@@ -24,4 +24,4 @@ jobs:
         run: pip install -r ../requirements.txt
 
       - name: Run notebook
-        run: papermill notebooks/Models_Daily_Monthly.ipynb notebooks/Models_Daily_Monthly.ipynb
+        run: papermill Models_Daily_Monthly.ipynb Models_Daily_Monthly.ipynb
