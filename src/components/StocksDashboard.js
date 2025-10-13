@@ -31,7 +31,10 @@ export default function StocksDashboard() {
     const [ticker, setTicker] = useState('MSFT');
     const [range, setRange] = useState('1y');
     const [predictionType, setPredictionType] = useState('daily');
-    const [dataPayload, setDataPayload] = useState(null);
+    const [fullHistory, setFullHistory] = useState([]); // always 10 years
+    const [filteredHistory, setFilteredHistory] = useState([]);
+    const [predictions, setPredictions] = useState([]);
+    const [technicalInfo, setTechnicalInfo] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [periodChanges, setPeriodChanges] = useState({});
@@ -78,48 +81,76 @@ export default function StocksDashboard() {
         { label: '10Y', value: '10y', days: 2520 },
     ];
 
-    async function fetchData() {
+    /** Helper: get cutoff date by range **/
+    function getCutoffDate(range) {
+        const d = new Date();
+        switch (range) {
+            case '1d': d.setDate(d.getDate() - 1); break;
+            case '1w': d.setDate(d.getDate() - 7); break;
+            case '1mo': d.setMonth(d.getMonth() - 1); break;
+            case '6mo': d.setMonth(d.getMonth() - 6); break;
+            case '1y': d.setFullYear(d.getFullYear() - 1); break;
+            case '3y': d.setFullYear(d.getFullYear() - 3); break;
+            case '5y': d.setFullYear(d.getFullYear() - 5); break;
+            default: d.setFullYear(d.getFullYear() - 10);
+        }
+        return d;
+    }
+
+    /** Fetch 10y history once per ticker **/
+    async function fetchFullHistory() {
         setLoading(true);
         setError(null);
         try {
             const params = new URLSearchParams({
                 ticker,
-                range,
+                range: '10y',
                 predictionType,
             });
-            const resp = await fetch(
-                `http://localhost:5001/api/stock-history?${params.toString()}`
-            );
+
+            const resp = await fetch(`http://localhost:5001/api/stock-history?${params.toString()}`);
             if (!resp.ok) {
                 const errBody = await resp.json().catch(() => ({}));
                 throw new Error(errBody.error || `HTTP ${resp.status}`);
             }
-            const json = await resp.json();
-            setDataPayload(json);
 
+            const json = await resp.json();
+            setFullHistory(json.history || []);
+            setPredictions(json.predictions || []);
+            setTechnicalInfo(json.technical_info || {});
+
+            // compute percent changes based on full history
             if (json.history && json.history.length > 1) {
-                const closes = json.history.map((h) => h.close);
+                const closes = json.history.map(h => h.close);
                 const newChanges = {};
-                periods.forEach((p) => {
-                    if (closes.length > 1) {
-                        const index = Math.max(closes.length - p.days, 0);
-                        const pastPrice = closes[index];
-                        const lastPrice = closes[closes.length - 1];
-                        if (pastPrice && lastPrice) {
-                            const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
-                            newChanges[p.value] = pct;
-                        }
+                periods.forEach(p => {
+                    const index = Math.max(closes.length - p.days, 0);
+                    const pastPrice = closes[index];
+                    const lastPrice = closes[closes.length - 1];
+                    if (pastPrice && lastPrice) {
+                        const pct = ((lastPrice - pastPrice) / pastPrice) * 100;
+                        newChanges[p.value] = pct;
                     }
                 });
                 setPeriodChanges(newChanges);
             }
         } catch (err) {
             setError(err.message);
-            setDataPayload(null);
+            setFullHistory([]);
+            setPredictions([]);
         } finally {
             setLoading(false);
         }
     }
+
+    /** Slice full history based on selected range **/
+    useEffect(() => {
+        if (fullHistory.length > 0) {
+            const cutoff = getCutoffDate(range);
+            const filtered = fullHistory.filter(h => new Date(h.date) >= cutoff);
+            setFilteredHistory(filtered);
+        }
+    }, [range, fullHistory]);
 
     async function fetchNews() {
         setNewsLoading(true);
@@ -272,11 +303,11 @@ export default function StocksDashboard() {
         if (diffMins < 60) return `${diffMins}m ago`;
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
-        
-        return date.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined 
+
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
         });
     }
 
@@ -289,7 +320,7 @@ export default function StocksDashboard() {
     }
 
     useEffect(() => {
-        fetchData();
+        fetchFullHistory();
         fetchNews();
         fetchOverview();
         fetchComments();
@@ -301,12 +332,18 @@ export default function StocksDashboard() {
     }, [ticker, hypeTimeframe]);
 
     const chartData = useMemo(() => {
-        if (!dataPayload) return null;
-        const hist = dataPayload.history || [];
-        const preds = dataPayload.predictions || [];
+        if (filteredHistory.length === 0) return null;
+        const histData = filteredHistory.map(h => ({ x: h.date, y: h.close }));
+        const predData = predictions.map(p => ({ x: p.date, y: p.predicted_close }));
 
-        const histData = hist.map((h) => ({ x: h.date, y: h.close }));
-        const predData = preds.map((p) => ({ x: p.date, y: p.predicted_close }));
+        // smooth red connection line from last history to first prediction
+        if (histData.length > 0 && predData.length > 0) {
+            const lastHist = histData[histData.length - 1];
+            const firstPred = predData[0];
+            if (lastHist.x !== firstPred.x) {
+                predData.unshift({ x: lastHist.x, y: lastHist.y });
+            }
+        }
 
         return {
             datasets: [
@@ -329,7 +366,7 @@ export default function StocksDashboard() {
                 },
             ],
         };
-    }, [dataPayload, darkMode]);
+    }, [filteredHistory, predictions, darkMode]);
 
     const chartOptions = {
         responsive: true,
@@ -365,6 +402,7 @@ export default function StocksDashboard() {
             <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
                 <select value={ticker} onChange={(e) => setTicker(e.target.value)}>
                     <option value="MSFT">Microsoft</option>
+                    <option value="AAPL">Apple</option>
                     <option value="T">AT&T</option>
                     <option value="IBM">IBM</option>
                 </select>
@@ -377,7 +415,7 @@ export default function StocksDashboard() {
                 </label>
             </div>
 
-            
+
 
             <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
                 {['chart', 'news', 'overview', 'discussion', 'hype'].map((tab) => (
@@ -390,13 +428,14 @@ export default function StocksDashboard() {
             {activeTab === 'chart' && (
                 <>
                     {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-                    {dataPayload && (
+                    {loading && <div>Loading…</div>}
+                    {!loading && filteredHistory.length > 0 && (
                         <div>
                             <div style={{ marginBottom: 12 }}>
                                 <strong>Technical Info:</strong>
-                                <div>Last Close: ${dataPayload.technical_info.last_close}</div>
-                                <div>Last Open: ${dataPayload.technical_info.last_open}</div>
-                                <div>Last Volume: {dataPayload.technical_info.last_volume}</div>
+                                <div>Last Close: ${technicalInfo.last_close}</div>
+                                <div>Last Open: ${technicalInfo.last_open}</div>
+                                <div>Last Volume: {technicalInfo.last_volume}</div>
                             </div>
                             <div style={{ height: 500 }}>
                                 {chartData ? <Line data={chartData} options={chartOptions} /> : <div>No chart data</div>}
@@ -409,16 +448,16 @@ export default function StocksDashboard() {
 
                                     return (
                                         <div key={p.value} onClick={() => setRange(p.value)} style={{ flex: 1, padding: '10px', borderRadius: '6px', textAlign: 'center', cursor: 'pointer', backgroundColor: isActive ? (darkMode ? '#333' : '#e3f2fd') : (darkMode ? '#1e1e1e' : '#fff'), border: isActive ? '2px solid #2196f3' : '1px solid rgba(0,0,0,0.1)' }}>
-                                        <div style={{ fontWeight: 'bold' }}>{p.label}</div>
-                                        <div style={{ fontSize: '12px', color: pct > 0 ? '#059669' : pct < 0 ? '#dc2626' : darkMode ? '#aaa' : '#666' }}>{pctText}</div>
+                                            <div style={{ fontWeight: 'bold' }}>{p.label}</div>
+                                            <div style={{ fontSize: '12px', color: pct > 0 ? '#059669' : pct < 0 ? '#dc2626' : darkMode ? '#aaa' : '#666' }}>{pctText}</div>
                                         </div>
-                                            );
-                                    })}
+                                    );
+                                })}
                             </div>
                             <div style={{ marginTop: 12 }}>
                                 <strong>Predictions:</strong>
                                 <ul>
-                                    {(dataPayload.predictions || []).map((p, idx) => (
+                                    {predictions.map((p, idx) => (
                                         <li key={idx}>{p.date} — ${p.predicted_close.toFixed(2)}</li>
                                     ))}
                                 </ul>
@@ -462,7 +501,7 @@ export default function StocksDashboard() {
                     )}
                 </div>
             )}
-            
+
             {/* HypeMeter Tab Content */}
             {activeTab === 'hype' && (
                 <div>
@@ -481,7 +520,7 @@ export default function StocksDashboard() {
 
                     {hypeData && (
                         <>
-                            
+
 
                             <div style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
                                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -495,7 +534,7 @@ export default function StocksDashboard() {
                                         Hype Score for the {hypeData.timeframe} (Reddit)
                                     </div>
                                 </div>
-                                
+
                                 <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{hypeData.mentions}</div>
@@ -575,7 +614,7 @@ export default function StocksDashboard() {
             {activeTab === 'discussion' && (
                 <div>
                     <h3 style={{ marginBottom: '16px' }}>Discussion for {ticker}</h3>
-                    
+
                     <div style={{ marginBottom: '24px' }}>
                         <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Share your thoughts about this stock..." maxLength={1000} style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: `1px solid ${darkMode ? '#444' : '#ccc'}`, background: darkMode ? '#1e1e1e' : '#fff', color: darkMode ? '#f1f1f1' : '#111', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }} />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
