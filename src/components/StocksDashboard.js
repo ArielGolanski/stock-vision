@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -24,6 +24,18 @@ ChartJS.register(
     Legend,
     Title
 );
+
+// Moved outside the component to prevent re-creation on every render
+const periods = [
+    { label: '1D', value: '1d', days: 1 },
+    { label: '1W', value: '1w', days: 5 },
+    { label: '1M', value: '1mo', days: 21 },
+    { label: '6M', value: '6mo', days: 126 },
+    { label: '1Y', value: '1y', days: 252 },
+    { label: '3Y', value: '3y', days: 756 },
+    { label: '5Y', value: '5y', days: 1260 },
+    { label: '10Y', value: '10y', days: 2520 },
+];
 
 export default function StocksDashboard() {
     const { darkMode } = useTheme();
@@ -70,17 +82,6 @@ export default function StocksDashboard() {
         }
     }, []);
 
-    const periods = [
-        { label: '1D', value: '1d', days: 1 },
-        { label: '1W', value: '1w', days: 5 },
-        { label: '1M', value: '1mo', days: 21 },
-        { label: '6M', value: '6mo', days: 126 },
-        { label: '1Y', value: '1y', days: 252 },
-        { label: '3Y', value: '3y', days: 756 },
-        { label: '5Y', value: '5y', days: 1260 },
-        { label: '10Y', value: '10y', days: 2520 },
-    ];
-
     /** Helper: get cutoff date by range **/
     function getCutoffDate(range) {
         const d = new Date();
@@ -98,7 +99,7 @@ export default function StocksDashboard() {
     }
 
     /** Fetch 10y history once per ticker **/
-    async function fetchFullHistory() {
+    const fetchFullHistory = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -141,7 +142,7 @@ export default function StocksDashboard() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [ticker, predictionType]);
 
     /** Slice full history based on selected range **/
     useEffect(() => {
@@ -152,7 +153,7 @@ export default function StocksDashboard() {
         }
     }, [range, fullHistory]);
 
-    async function fetchNews() {
+    const fetchNews = useCallback(async () => {
         setNewsLoading(true);
         try {
             const res = await fetch(
@@ -167,9 +168,9 @@ export default function StocksDashboard() {
         } finally {
             setNewsLoading(false);
         }
-    }
+    }, [ticker]);
 
-    async function fetchOverview() {
+    const fetchOverview = useCallback(async () => {
         setOverviewLoading(true);
         try {
             const res = await fetch(
@@ -184,9 +185,9 @@ export default function StocksDashboard() {
         } finally {
             setOverviewLoading(false);
         }
-    }
+    }, [ticker]);
 
-    async function fetchComments() {
+    const fetchComments = useCallback(async () => {
         setCommentsLoading(true);
         setCommentError(null);
         try {
@@ -203,10 +204,10 @@ export default function StocksDashboard() {
         } finally {
             setCommentsLoading(false);
         }
-    }
+    }, [ticker]);
 
     // Fetch Hype Data
-    async function fetchHypeData() {
+    const fetchHypeData = useCallback(async () => {
         setHypeLoading(true);
         setHypeData(null);
         try {
@@ -221,9 +222,9 @@ export default function StocksDashboard() {
         } finally {
             setHypeLoading(false);
         }
-    }
+    }, [ticker, hypeTimeframe]);
 
-    async function handleSubmitComment(e) {
+    const handleSubmitComment = useCallback(async (e) => {
         e.preventDefault();
         if (!newComment.trim()) return;
 
@@ -254,16 +255,16 @@ export default function StocksDashboard() {
             }
 
             setNewComment('');
-            await fetchComments();
+            await fetchComments(); // Refetch comments after submission
         } catch (err) {
             console.error('Comment submission error:', err);
             setCommentError(err.message);
         } finally {
             setSubmitting(false);
         }
-    }
+    }, [newComment, ticker, fetchComments]);
 
-    async function handleDeleteComment(commentId) {
+    const handleDeleteComment = useCallback(async (commentId) => {
         if (!window.confirm('Are you sure you want to delete this comment?')) return;
 
         try {
@@ -284,12 +285,12 @@ export default function StocksDashboard() {
                 throw new Error(errBody.message || 'Failed to delete comment');
             }
 
-            await fetchComments();
+            await fetchComments(); // Refetch comments after deletion
         } catch (err) {
             console.error('Comment deletion error:', err);
             alert(err.message);
         }
-    }
+    }, [fetchComments]);
 
     function formatDate(dateString) {
         const date = new Date(dateString);
@@ -311,25 +312,24 @@ export default function StocksDashboard() {
         });
     }
 
-    function formatTime(dateString) {
-        return new Date(dateString).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-    }
-
+    // This effect fetches data that depends on both the ticker and the prediction type
     useEffect(() => {
         fetchFullHistory();
+    }, [fetchFullHistory]);
+
+    // This effect fetches data that only depends on the ticker
+    useEffect(() => {
         fetchNews();
         fetchOverview();
         fetchComments();
-    }, [ticker, range, predictionType]);
+    }, [fetchNews, fetchOverview, fetchComments]);
 
-    // Fetch Hype Data when ticker or timeframe changes
+
+    // This effect fetches Hype Data when ticker or timeframe changes
     useEffect(() => {
         fetchHypeData();
-    }, [ticker, hypeTimeframe]);
+    }, [fetchHypeData]);
+
 
     const chartData = useMemo(() => {
         if (filteredHistory.length === 0) return null;
