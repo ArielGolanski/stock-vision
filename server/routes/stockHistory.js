@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const ML_BASE_URL = process.env.ML_SERVICE_URL || 'http://ml:8000';
+const ML_BASE_URL = process.env.ML_SERVICE_URL || (process.env.NODE_ENV === 'production' ? 'http://ml:8000' : 'http://localhost:8000');
 
 // Proxy route: merges FastAPI stock-history + prediction endpoints
 router.get("/", async (req, res) => {
