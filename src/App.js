@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
 import { ThemeProvider } from './components/ThemeContext';
-import Chatbot from './components/Chatbot';
+// import Chatbot from './components/Chatbot';
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
-        <Chatbot />
+        {/* <Chatbot /> */}
       </Router>
     </ThemeProvider>
   );
