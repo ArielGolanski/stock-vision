@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TrendingStocks from '../components/TrendingStocks';
 import StocksDashboard from '../components/StocksDashboard';
 import HeaderMenu from '../components/HeaderMenu';
+import { API_URL } from '../config';
 import { useTheme } from '../components/ThemeContext';
 
 const Dashboard = () => {
@@ -19,7 +20,7 @@ const Dashboard = () => {
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/users/profile', {
+        const res = await fetch(`${API_URL}/api/users/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

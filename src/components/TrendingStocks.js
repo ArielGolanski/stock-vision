@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from "./ThemeContext";
+import { API_URL } from "../config";
 
 const TrendingStocks = () => {
   const { darkMode } = useTheme();
@@ -15,7 +16,7 @@ const TrendingStocks = () => {
       setLoading(true);
       setError('');
 
-      const res = await fetch('http://localhost:5001/api/stocks/trending');
+      const res = await fetch(`${API_URL}/api/stocks/trending`);
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
