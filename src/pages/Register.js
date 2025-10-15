@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const Register = () => {
     if (password !== repeatPassword) return setError('Passwords do not match');
 
     try {
-      const res = await fetch('http://localhost:5001/api/users/register', {
+      const res = await fetch(`${API_URL}/api/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, firstName, lastName }),
@@ -57,7 +58,7 @@ const Register = () => {
   // ---------- Verify Email ----------
   const handleVerifyCode = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/users/verify-email', {
+      const res = await fetch(`${API_URL}/api/users/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code: verificationCode }),

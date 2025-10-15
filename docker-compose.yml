@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    container_name: stock-vision-frontend
+    ports:
+      - "3000:80" # Nginx serves React build
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://localhost:5000
+      - REACT_APP_ML_URL=http://localhost:8000
+    depends_on:
+      - backend
+      - ml
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./server
+    container_name: stock-vision-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - CONNECTION_STRING=mongodb://mongo:27017/stockvision
+      - CORS_ORIGIN=*
+      - ML_SERVICE_URL=http://ml:8000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  ml:
+    build:
+      context: ./server/ml
+      args:
+        REQUIREMENTS: requirements.txt
+    container_name: stock-vision-ml
+    environment:
+      - UVICORN_HOST=0.0.0.0
+      - UVICORN_PORT=8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server/ml_models:/app/ml_models:ro
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6
+    container_name: stock-vision-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
