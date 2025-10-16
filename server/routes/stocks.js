@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const ML_BASE_URL = process.env.ML_SERVICE_URL || 'http://ml:8000';
 const yf = require("yahoo-finance2").default;
 const router = express.Router();
 
@@ -102,7 +103,7 @@ router.get('/predict/:ticker', async (req, res) => {
   const { ticker } = req.params;
   const { target, days } = req.query;
   try {
-    const response = await axios.get(`http://localhost:8000/predict/${ticker}`, {
+    const response = await axios.get(`${ML_BASE_URL}/predict/${ticker}`, {
       params: { target: target || "Daily Change %", days: days || 5 }
     });
     res.json(response.data);

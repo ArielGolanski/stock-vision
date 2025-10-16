@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { useTheme } from './ThemeContext';
+import { API_URL } from '../config';
 
 ChartJS.register(
     CategoryScale,
@@ -109,7 +110,7 @@ export default function StocksDashboard() {
                 predictionType,
             });
 
-            const resp = await fetch(`http://localhost:5001/api/stock-history?${params.toString()}`);
+            const resp = await fetch(`${API_URL}/api/stock-history?${params.toString()}`);
             if (!resp.ok) {
                 const errBody = await resp.json().catch(() => ({}));
                 throw new Error(errBody.error || `HTTP ${resp.status}`);
@@ -157,7 +158,7 @@ export default function StocksDashboard() {
         setNewsLoading(true);
         try {
             const res = await fetch(
-                `http://localhost:5001/api/stocks/news?ticker=${ticker}`
+                `${API_URL}/api/stocks/news?ticker=${ticker}`
             );
             if (!res.ok) throw new Error(`Failed to fetch news`);
             const json = await res.json();
@@ -174,7 +175,7 @@ export default function StocksDashboard() {
         setOverviewLoading(true);
         try {
             const res = await fetch(
-                `http://localhost:5001/api/stocks/overview?ticker=${ticker}`
+                `${API_URL}/api/stocks/overview?ticker=${ticker}`
             );
             if (!res.ok) throw new Error(`Failed to fetch overview`);
             const json = await res.json();
@@ -192,7 +193,7 @@ export default function StocksDashboard() {
         setCommentError(null);
         try {
             const res = await fetch(
-                `http://localhost:5001/api/comments?ticker=${ticker}`
+                `${API_URL}/api/comments?ticker=${ticker}`
             );
             if (!res.ok) throw new Error(`Failed to fetch comments`);
             const json = await res.json();
@@ -212,7 +213,7 @@ export default function StocksDashboard() {
         setHypeData(null);
         try {
             const res = await fetch(
-                `http://localhost:5001/api/hypemeter?ticker=${ticker}&timeframe=${hypeTimeframe}`
+                `${API_URL}/api/hypemeter?ticker=${ticker}&timeframe=${hypeTimeframe}`
             );
             if (!res.ok) throw new Error(`Failed to fetch hype data`);
             const json = await res.json();
@@ -237,7 +238,7 @@ export default function StocksDashboard() {
                 throw new Error('Please log in to comment');
             }
 
-            const res = await fetch('http://localhost:5001/api/comments', {
+            const res = await fetch(`${API_URL}/api/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -273,7 +274,7 @@ export default function StocksDashboard() {
                 throw new Error('Please log in to delete comments');
             }
 
-            const res = await fetch(`http://localhost:5001/api/comments/${commentId}`, {
+            const res = await fetch(`${API_URL}/api/comments/${commentId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

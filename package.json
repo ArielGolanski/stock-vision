@@ -15,7 +15,7 @@
     "react": "^19.1.1",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.8.2",
+    "react-router-dom": "^7.9.4",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -42,5 +42,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "Full-stack stock analysis and prediction platform with:\r - **Frontend** (React + Chart.js + Dark Mode support)\r - **Backend** (Node.js + Express + MongoDB)\r - **ML Service** (FastAPI + TensorFlow/PyTorch + yFinance)",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

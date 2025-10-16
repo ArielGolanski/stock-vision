@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const ML_BASE_URL = process.env.ML_SERVICE_URL || 'http://ml:8000';
 
 // Proxy route: merges FastAPI stock-history + prediction endpoints
 router.get("/", async (req, res) => {
@@ -18,7 +19,7 @@ router.get("/", async (req, res) => {
         }
 
         // 1. Get history + stock info from FastAPI
-        const stockResp = await axios.get("http://localhost:8000/api/stock-history", {
+        const stockResp = await axios.get(`${ML_BASE_URL}/api/stock-history`, {
             params: { ticker, range, predictionType, predictionPeriods },
         });
         const stockData = stockResp.data;
@@ -33,7 +34,7 @@ router.get("/", async (req, res) => {
         let predictions = [];
         try {
             const mlTarget = predictionType === "monthly" ? "Monthly Change %" : "Daily Change %";
-            const mlResp = await axios.get(`http://localhost:8000/predict/${ticker}`, {
+            const mlResp = await axios.get(`${ML_BASE_URL}/predict/${ticker}`, {
                 params: { target: mlTarget, days: predictionPeriods, period: range },
             });
 

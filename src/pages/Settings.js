@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../components/ThemeContext";
 import HeaderMenu from "../components/HeaderMenu";
+import { API_URL } from "../config";
 
 const Settings = () => {
     const { darkMode } = useTheme();
@@ -22,7 +23,7 @@ const Settings = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        fetch("http://localhost:5001/api/users/profile", {
+        fetch(`${API_URL}/api/users/profile`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => res.json())
@@ -47,7 +48,7 @@ const Settings = () => {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch("http://localhost:5001/api/users/profile", {
+            const res = await fetch(`${API_URL}/api/users/profile`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -95,7 +96,7 @@ const Settings = () => {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch("http://localhost:5001/api/users/change-password", {
+            const res = await fetch(`${API_URL}/api/users/change-password`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

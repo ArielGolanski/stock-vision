@@ -45,37 +45,63 @@ cd stock-vision
 
 ## ▶ Deployment
 
-### 1. Run server
+### Docker Deployment (Recommended)
+
+This project uses Docker Compose to run all services:
+- frontend (React built and served by Nginx)
+- backend (Node/Express)
+- ml (FastAPI/Uvicorn)
+- mongo (MongoDB)
+
+#### 1) Fast build (lite ML, no training) and start all services
 ```bash
-cd server
-```
-Run on server folder:
-```bash
-npm install
-npm start
+docker-compose up -d --build
 ```
 
-### 2. Train model
+Services:
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:5000`
+- ML Service: `http://localhost:8000`
+- MongoDB: `mongodb://localhost:27017`
 
+Environment variables (preconfigured in compose):
+- `REACT_APP_API_URL=http://localhost:5000`
+- `REACT_APP_ML_URL=http://localhost:8000`
+- `CONNECTION_STRING=mongodb://mongo:27017/stockvision`
+
+#### 2) View logs
 ```bash
-cd ml
-pip install -r requirements.txt
-papermill papermill notebooks/Models_Daily_Monthly.ipynb notebooks/Models_Daily_Monthly.ipynb --force
+docker-compose logs -f backend
+# or
+docker-compose logs -f ml
 ```
 
-### 3. Run predictions model
-Run on server/ml folder:
+#### 3) Stop all services
 ```bash
-uvicorn ml_service:app --reload --port 8000
+docker-compose down
 ```
 
-### 4. Run frontend
-```bash
-cd..
-cd..
-```
-Run on root folder:
-```bash
-npm install
-npm start
-```
+#### Troubleshooting
+- The default compose uses a lite ML image (no tensorflow/torch) for faster builds. This lets you run the four containers quickly.
+- To switch to full ML dependencies later, build ml with the full requirements:
+  ```bash
+  docker-compose build --build-arg REQUIREMENTS=requirements.txt ml
+  docker-compose up -d
+  ```
+- If you hit network timeouts during ML build, try:
+  ```bash
+  docker-compose build --no-cache ml
+  ```
+  or build on a faster network once.
+- On first run, MongoDB data is created in the `mongo_data` volume. To reset:
+  ```bash
+  docker-compose down -v
+  ```
+- Verify services are listening:
+  ```bash
+  curl http://localhost:5000/
+  curl http://localhost:8000/
+  ```
+
+### Manual (non-Docker)
+See sections below for running server, ML, and frontend individually.
