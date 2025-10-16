@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const ML_BASE_URL = process.env.ML_SERVICE_URL || 'http://ml:8000';
+const ML_BASE_URL = process.env.ML_SERVICE_URL || (process.env.NODE_ENV === 'production' ? 'http://ml:8000' : 'http://localhost:8000');
 
 // Proxy route: merges FastAPI stock-history + prediction endpoints
 router.get("/", async (req, res) => {
@@ -19,10 +19,18 @@ router.get("/", async (req, res) => {
         }
 
         // 1. Get history + stock info from FastAPI
-        const stockResp = await axios.get(`${ML_BASE_URL}/api/stock-history`, {
-            params: { ticker, range, predictionType, predictionPeriods },
-        });
-        const stockData = stockResp.data;
+        let stockData;
+        try {
+            const stockResp = await axios.get(`${ML_BASE_URL}/api/stock-history`, {
+                params: { ticker, range, predictionType, predictionPeriods },
+            });
+            stockData = stockResp.data;
+        } catch (mlErr) {
+            const status = mlErr.response?.status || 502;
+            const details = mlErr.response?.data || { error: mlErr.message };
+            console.error("ML /api/stock-history error:", status, details);
+            return res.status(status).json({ error: "ML service error", details });
+        }
 
 
 
@@ -34,6 +42,8 @@ router.get("/", async (req, res) => {
         let predictions = [];
         try {
             const mlTarget = predictionType === "monthly" ? "Monthly Change %" : "Daily Change %";
+            console.log("ML base URL is set to:", ML_BASE_URL);
+            console.log("Ticker is: ", ticker);
             const mlResp = await axios.get(`${ML_BASE_URL}/predict/${ticker}`, {
                 params: { target: mlTarget, days: predictionPeriods, period: range },
             });
@@ -86,8 +96,9 @@ router.get("/", async (req, res) => {
             predictions,
         });
     } catch (err) {
-        console.error("Proxy error:", err.message);
-        return res.status(500).json({ error: "Failed to fetch data from ML service" });
+        const fallbackDetails = err.response?.data || { error: err.message };
+        console.error("Proxy error:", err.message, fallbackDetails);
+        return res.status(500).json({ error: "Failed to fetch data from ML service", details: fallbackDetails });
     }
 });
 
