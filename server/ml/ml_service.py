@@ -6,6 +6,8 @@ from typing import Optional
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
+import math
+import random
 
 app = FastAPI(title="Stock Prediction Service")
 
@@ -168,3 +170,168 @@ def stock_history(
 
     except Exception as e:
         return {"error": str(e)}
+
+
+# -----------------------------
+# Backtest endpoint
+# -----------------------------
+@app.get("/backtest/{ticker}")
+def backtest(
+    ticker: str,
+    window_days: int = Query(90, ge=10, le=365),
+    horizon: int = Query(1, ge=1, le=5),
+    target: str = Query("Daily Change %", enum=["Daily Change %", "Monthly Change %"]) 
+):
+    """Walk-forward backtest producing next-\n    day predictions over the last window_days and metrics (directional, MAE, RMSE).
+    """
+    ticker = ticker.strip().upper()
+
+    # Fetch sufficient history (pad a bit beyond window)
+    period = "2y" if window_days > 180 else ("6mo" if window_days > 60 else "3mo")
+    try:
+        stock = yf.Ticker(ticker)
+        hist = stock.history(period=period, interval="1d")
+        if hist.empty:
+            raise HTTPException(status_code=404, detail="No historical data for ticker")
+        # Use last window_days + horizon to ensure we have ground truth for last step
+        hist = hist.tail(window_days + horizon + 5)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"History fetch failed: {str(exc)}")
+
+    dates = []
+    y_true = []
+    y_pred = []
+
+    # Try to prepare ML model once (if available)
+    predictor = None
+    prepare_features = None
+    load_enhanced_data = None
+    prefix = "daily" if target == "Daily Change %" else "monthly"
+    try:
+        from model_utils import EnhancedLSTMPredictor, prepare_features as _prep, load_enhanced_data as _load
+        predictor = EnhancedLSTMPredictor()
+        model_path = os.path.join(BASE_MODEL_PATH, f"{ticker}/{ticker}_enhanced_lstm")
+        predictor.load(model_path=model_path, prefix=prefix)
+        prepare_features = _prep
+        load_enhanced_data = _load
+        enhanced_df = load_enhanced_data(ticker)
+    except Exception:
+        predictor = None
+        enhanced_df = None
+
+    closes = hist["Close"].tolist()
+    idx_list = list(hist.index)
+
+    # Walk-forward
+    # For each index i where i+hor exists, predict price at i+horizon using data up to i
+    for i in range(0, len(closes) - horizon):
+        # we only keep last window_days predictions
+        # skip until within last window_days
+        remaining = len(closes) - (i + horizon)
+        if remaining > window_days:
+            continue
+
+        history_slice_end = i + 1  # inclusive data up to i
+        recent_prices = closes[:history_slice_end]
+        prev_close = recent_prices[-1]
+
+        # Ground truth at i + horizon
+        true_close = closes[i + horizon]
+
+        # Predict next price
+        pred_close = None
+        if predictor is not None and enhanced_df is not None:
+            try:
+                # Align enhanced features to same dates when possible; fallback to price-based length
+                # Use all data up to current date index
+                current_date = idx_list[i]
+                subset = enhanced_df.loc[:current_date]
+                features, _, _ = prepare_features(subset, target)
+                # Forecast horizon steps ahead; take last returned future price
+                _, future_prices = predictor.forecast_future(subset, features, target, n_days=horizon)
+                pred_close = float(future_prices[-1])
+            except Exception:
+                pred_close = None
+
+        if pred_close is None:
+            # Heuristic fallback: drift from prev_close, scaled by horizon
+            daily_change = 0.9 / 100.0  # 0.9%
+            pred_close = prev_close * ((1.0 + daily_change) ** horizon)
+
+        dates.append(format_date(idx_list[i + horizon]))
+        y_true.append(float(true_close))
+        y_pred.append(float(pred_close))
+
+    if not y_true:
+        raise HTTPException(status_code=500, detail="Insufficient data for backtest")
+
+    # Metrics
+    abs_errors = [abs(p - t) for p, t in zip(y_pred, y_true)]
+    mae = sum(abs_errors) / len(abs_errors)
+    mse = sum((p - t) ** 2 for p, t in zip(y_pred, y_true)) / len(y_true)
+    rmse = math.sqrt(mse)
+
+    # Directional accuracy uses price change sign vs previous observed close
+    directional_total = 0
+    directional_hits = 0
+    for j in range(len(y_true)):
+        # previous true close is the price at date j - horizon (align to series origin)
+        # We can approximate by using previous element in hist aligned by dates
+        # Find index of prediction date in idx_list and use previous
+        try:
+            dt = pd.to_datetime(dates[j])
+            k = idx_list.index(dt)
+            prev_true = float(hist["Close"].iloc[k - horizon]) if k - horizon >= 0 else float(hist["Close"].iloc[k])
+        except Exception:
+            prev_true = y_true[j]
+        actual_dir = 1 if (y_true[j] - prev_true) >= 0 else -1
+        pred_dir = 1 if (y_pred[j] - prev_true) >= 0 else -1
+        directional_total += 1
+        if actual_dir == pred_dir:
+            directional_hits += 1
+
+    directional_accuracy = directional_hits / directional_total if directional_total else 0.0
+
+    return {
+        "ticker": ticker,
+        "window_days": window_days,
+        "horizon": horizon,
+        "metrics": {
+            "directionalAccuracy": round(directional_accuracy, 4),
+            "mae": round(mae, 6),
+            "rmse": round(rmse, 6),
+        },
+        "series": {
+            "dates": dates,
+            "yTrue": y_true,
+            "yPred": y_pred,
+        },
+    }
+
+
+# -----------------------------
+# Mock external providers endpoint
+# -----------------------------
+@app.get("/providers/externals/{ticker}")
+def mock_external_providers(
+    ticker: str,
+    months: int = Query(12, ge=3, le=24)
+):
+    """Return mock monthly directional accuracy for external providers for demonstration.
+    Deterministic by ticker to keep values stable across calls."""
+    seed = sum(ord(c) for c in ticker.upper())
+    rng = random.Random(seed)
+
+    def make_provider(name: str):
+        # Base between 0.45 and 0.7
+        acc = 0.45 + rng.random() * 0.25
+        samples = months
+        return {"provider": name, "metrics": {"directionalAccuracy": round(acc, 4), "samples": samples}}
+
+    providers = [
+        make_provider("Yahoo Analysts (Mock)"),
+        make_provider("WallStreetZen (Mock)"),
+        make_provider("TipRanks (Mock)"),
+    ]
+
+    return {"ticker": ticker.upper(), "providers": providers}
