@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    // Point to server/ml/ml_models regardless of CWD
-    const baseDir = path.join(__dirname, "..", "ml", "ml_models");
+    const baseDir = path.join(process.cwd(), "ml_models");
+    console.log()
     const allMetrics = [];
 
     if (!fs.existsSync(baseDir)) {
@@ -16,7 +16,9 @@ router.get("/", async (req, res) => {
 
     // Go through each ticker directory
     const tickers = fs.readdirSync(baseDir);
+    console.log(tickers)
     for (const ticker of tickers) {
+      console.log("ticker:", ticker);
       const tickerDir = path.join(baseDir, ticker, `${ticker}_enhanced_lstm`);
       if (!fs.existsSync(tickerDir)) continue;
 
