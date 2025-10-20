@@ -7,6 +7,9 @@
 /.pnp
 .pnp.js
 
+# Ignore pyc
+/server/ml/__pycache__
+
 # testing
 /coverage
 

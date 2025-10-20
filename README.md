@@ -104,4 +104,24 @@ docker-compose down
   ```
 
 ### Manual (non-Docker)
-See sections below for running server, ML, and frontend individually.
+## Run ML model
+From root folder:
+```bash
+cd server/ml
+uvicorn ml_service:app --reload --port 8000
+```
+
+## Run server
+From root folder:
+```bash
+cd server
+npm install
+npm start
+```
+
+## Run Frontend
+From root folder:
+```bash
+npm install
+npm start
+```
