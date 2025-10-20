@@ -1,0 +1,45 @@
+[
+    {
+        "ticker": "T",
+        "target": "Daily Change %",
+        "timestamp": "2025-10-20 14:08:49",
+        "MSE": 144.239682,
+        "RMSE": 12.009983,
+        "MAE": 11.929366,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
+    },
+    {
+        "ticker": "T",
+        "target": "Monthly Change %",
+        "timestamp": "2025-10-20 14:08:56",
+        "MSE": 1417.120157,
+        "RMSE": 37.644656,
+        "MAE": 37.319217,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI"
+        ],
+        "training_len": 1988
+    }
+]

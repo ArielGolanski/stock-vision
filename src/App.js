@@ -4,7 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
-import PredictionAccuracy from './pages/PredictionAccuracy';
+import Accuracy from "./pages/Accuracy";
 import { ThemeProvider } from './components/ThemeContext';
 // import Chatbot from './components/Chatbot';
 
@@ -17,7 +17,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/accuracy" element={<PredictionAccuracy />} />
+          <Route path='/accuracy' element={<Accuracy />} />
         </Routes>
         {/* <Chatbot /> */}
       </Router>

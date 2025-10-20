@@ -34,7 +34,7 @@ const hypeRoutes = require('./routes/hype');
 app.use('/api', hypeRoutes);
 
 const accuracyRoutes = require('./routes/accuracy');
-app.use('/api', accuracyRoutes);
+app.use('/api/accuracy', accuracyRoutes);
 
 // Root check
 app.get('/', (_, res) => res.send('Server is running 🚀'));
