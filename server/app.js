@@ -13,7 +13,7 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Mongo
-mongoose.connect(process.env.CONNECTION_STRING)
+mongoose.connect(process.env.ATLAS_CONNECTION_STRING)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
@@ -35,6 +35,9 @@ app.use('/api', hypeRoutes);
 
 const accuracyRoutes = require('./routes/accuracy');
 app.use('/api/accuracy', accuracyRoutes);
+
+const chatRoutes = require('./routes/chat');
+app.use('/api/chat', chatRoutes);
 
 // Root check
 app.get('/', (_, res) => res.send('Server is running 🚀'));

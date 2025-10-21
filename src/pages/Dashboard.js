@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TrendingStocks from '../components/TrendingStocks';
 import StocksDashboard from '../components/StocksDashboard';
 import HeaderMenu from '../components/HeaderMenu';
+import Chatbot from '../components/Chatbot';
 import { API_URL } from '../config';
 import { useTheme } from '../components/ThemeContext';
 
@@ -66,6 +67,9 @@ const Dashboard = () => {
           <TrendingStocks />
         </div>
       </div>
+
+      {/* Chatbot Component */}
+      <Chatbot />
     </div>
   );
 };

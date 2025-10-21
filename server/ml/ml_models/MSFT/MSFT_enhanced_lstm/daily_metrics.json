@@ -1,0 +1,71 @@
+[
+    {
+        "ticker": "MSFT",
+        "target": "Daily Change %",
+        "timestamp": "2025-10-21 11:30:06",
+        "MSE": 2.156694,
+        "RMSE": 1.468569,
+        "MAE": 1.068328,
+        "MAPE": 274.102032,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
+    },
+    {
+        "ticker": "MSFT",
+        "target": "Daily Change %",
+        "timestamp": "2025-10-21 12:12:50",
+        "MSE": 1.965193,
+        "RMSE": 1.401853,
+        "MAE": 0.979382,
+        "MAPE": 131.159086,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
+    },
+    {
+        "ticker": "MSFT",
+        "target": "Daily Change %",
+        "timestamp": "2025-10-21 12:31:21",
+        "MSE": 2.15179,
+        "RMSE": 1.466898,
+        "MAE": 1.062389,
+        "MAPE": 263.723894,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
+    }
+]

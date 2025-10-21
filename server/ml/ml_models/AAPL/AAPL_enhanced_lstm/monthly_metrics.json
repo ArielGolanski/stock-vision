@@ -1,0 +1,24 @@
+[
+    {
+        "ticker": "AAPL",
+        "target": "Monthly Change %",
+        "timestamp": "2025-10-21 12:38:51",
+        "MSE": 17.35372,
+        "RMSE": 4.16578,
+        "MAE": 3.251244,
+        "MAPE": 211.600063,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI"
+        ],
+        "training_len": 1988
+    }
+]
