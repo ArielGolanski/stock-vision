@@ -25,7 +25,7 @@ function setCache(map, key, data) {
 }
 
 // --- Popular US stocks ---
-const symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'AVGO', 'WMT', 'LLY', 'ORCL', 'V', 'MA', 'NFLX'];
+const symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'AVGO', 'WMT', 'LLY', 'ORCL', 'V', 'MA', 'NFLX', 'IBM', 'T'];
 
 // --- Helper: Finnhub quote ---
 async function fetchQuote(symbol) {
