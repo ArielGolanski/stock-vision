@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
-import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -32,27 +31,6 @@ const Login = () => {
         navigate('/');
       } else {
         setError(data.message || 'Login failed');
-      }
-    } catch (err) {
-      setError('Error connecting to server');
-    }
-  };
-
-  const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      const token = credentialResponse.credential;
-      const res = await fetch(`${API_URL}/api/users/google-login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-      });
-      const data = await res.json();
-      if (res.status === 200) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', data.user.firstName);
-        navigate('/');
-      } else {
-        setError(data.message || 'Google login failed');
       }
     } catch (err) {
       setError('Error connecting to server');

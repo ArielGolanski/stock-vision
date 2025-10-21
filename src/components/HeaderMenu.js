@@ -98,6 +98,36 @@ export default function HeaderMenu() {
                         ⚙️ Settings
                     </button>
                     <button
+                        style={{
+                            display: "block",
+                            width: "100%",
+                            textAlign: "left",
+                            background: "none",
+                            border: "none",
+                            padding: "8px",
+                            cursor: "pointer",
+                            color: "inherit",
+                        }}
+                        onClick={() => { navigate("/accuracy") }}
+                    >
+                        📈 Accuracy
+                    </button>
+                    <button
+                        style={{
+                            display: "block",
+                            width: "100%",
+                            textAlign: "left",
+                            background: "none",
+                            border: "none",
+                            padding: "8px",
+                            cursor: "pointer",
+                            color: "inherit",
+                        }}
+                        onClick={() => { navigate("/competitor-predictions") }}
+                    >
+                        🏆 Competitors
+                    </button>
+                    <button
                         onClick={handleLogout}
                         style={{
                             display: "block",
