@@ -293,6 +293,15 @@ export default function StocksDashboard() {
         }
     }, [fetchComments]);
 
+    const getStockLogo = (symbol) => {
+    try {
+      return require(`../assets/${symbol.toLowerCase()}.png`);
+    } catch (error) {
+      console.warn(`Logo not found for ${symbol}`);
+      return null;
+    }
+    };
+
     function formatDate(dateString) {
         const date = new Date(dateString);
         const now = new Date();
@@ -432,15 +441,85 @@ export default function StocksDashboard() {
                     {loading && <div>Loading…</div>}
                     {!loading && filteredHistory.length > 0 && (
                         <div>
-                            <div style={{ marginBottom: 12 }}>
-                                <strong>Technical Info:</strong>
-                                <div>Last Close: ${technicalInfo.last_close}</div>
-                                <div>Last Open: ${technicalInfo.last_open}</div>
-                                <div>Last Volume: {technicalInfo.last_volume}</div>
+                            {/* START: NEW STYLED TECHNICAL INFO PANEL (Fixes 'stock' errors) */}
+                            <div style={{ 
+                                marginBottom: 20, 
+                                padding: 16, 
+                                border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, 
+                                borderRadius: '8px', 
+                                background: darkMode ? '#1e1e1e' : '#fff' 
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15 }}>
+                                    {/* Logo Section (FIXED: using ticker) */}
+                                    {getStockLogo(ticker) ? (
+                                        <img 
+                                            src={getStockLogo(ticker)} 
+                                            alt={`${ticker} Logo`} 
+                                            style={{ width: 48, height: 48, marginRight: 16, borderRadius: '4px', border: '1px solid #eee' }} 
+                                            onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'block'; }} 
+                                        />
+                                    ) : (
+                                        <div style={{ width: 48, height: 48, marginRight: 16, borderRadius: '4px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', background: darkMode ? '#333' : '#f0f0f0', color: darkMode ? '#999' : '#666', fontSize: '18px', fontWeight: 'bold' }}>
+                                            {ticker.slice(0, 2)}
+                                        </div>
+                                    )}
+                                    
+                                    <div>
+                                        {/* Company Name */}
+                                        <h3 style={{ margin: 0, fontWeight: 'bold' }}>
+                                            {(function() {
+                                                switch(ticker) {
+                                                    case 'MSFT': return 'Microsoft Corp.';
+                                                    case 'AAPL': return 'Apple Inc.'; 
+                                                    case 'T': return 'AT&T Inc.';
+                                                    case 'IBM': return 'IBM';
+                                                    default: return overview?.name || ticker;
+                                                }
+                                            })()}
+                                        </h3>
+                                        <div style={{ fontSize: '14px', color: darkMode ? '#bbb' : '#666' }}>{ticker} Stock Quote</div>
+                                    </div>
+                                </div>
+
+                                <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    borderTop: `1px solid ${darkMode ? '#333' : '#eee'}`, 
+                                    paddingTop: 10 
+                                }}>
+                                    {/* Last Close Price */}
+                                    <div style={{ flex: 1, textAlign: 'center', borderRight: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
+                                        <div style={{ fontWeight: 'bold', fontSize: '20px', color: '#2196f3' }}>
+                                            ${parseFloat(technicalInfo.last_close).toFixed(2)}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST CLOSE</div>
+                                    </div>
+                                    
+                                    {/* Last Open Price */}
+                                    <div style={{ flex: 1, textAlign: 'center', borderRight: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
+                                        <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                                            ${parseFloat(technicalInfo.last_open).toFixed(2)}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST OPEN</div>
+                                    </div>
+                                    
+                                    {/* Last Volume */}
+                                    <div style={{ flex: 1, textAlign: 'center' }}>
+                                        <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                                            {parseInt(technicalInfo.last_volume).toLocaleString()}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST VOLUME</div>
+                                    </div>
+                                </div>
                             </div>
+                            {/* END: NEW STYLED TECHNICAL INFO PANEL */}
+
+                            
+
                             <div style={{ height: 500 }}>
                                 {chartData ? <Line data={chartData} options={chartOptions} /> : <div>No chart data</div>}
                             </div>
+
                             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                                 {periods.map((p) => {
                                     const isActive = range === p.value;
@@ -455,13 +534,37 @@ export default function StocksDashboard() {
                                     );
                                 })}
                             </div>
-                            <div style={{ marginTop: 12 }}>
-                                <strong>Predictions:</strong>
-                                <ul>
+
+
+                            <div style={{ marginTop: 20, padding: 16, border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff' }}>
+                                <h4 style={{ margin: '0 0 10px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                                    📈 Predictions
+                                </h4>
+                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '14px' }}>
                                     {predictions.map((p, idx) => (
-                                        <li key={idx}>{p.date} — ${p.predicted_close.toFixed(2)}</li>
+                                        <li 
+                                            key={idx} 
+                                            style={{ 
+                                                display: 'flex', 
+                                                justifyContent: 'space-between', 
+                                                padding: '8px 0', 
+                                                borderBottom: idx < predictions.length - 1 ? `1px dotted ${darkMode ? '#333' : '#eee'}` : 'none' 
+                                            }}
+                                        >
+                                            <span style={{ color: darkMode ? '#bbb' : '#444' }}>
+                                                {p.date}
+                                            </span>
+                                            <strong style={{ color: '#059669' }}>
+                                                ${p.predicted_close.toFixed(2)}
+                                            </strong>
+                                        </li>
                                     ))}
                                 </ul>
+                                {predictions.length === 0 && (
+                                    <div style={{ textAlign: 'center', padding: '10px 0', color: darkMode ? '#aaa' : '#666', fontSize: '13px' }}>
+                                        No upcoming predictions.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -491,13 +594,55 @@ export default function StocksDashboard() {
                     {overviewLoading && <div>Loading overview…</div>}
                     {!overviewLoading && !overview && <div>No overview available.</div>}
                     {overview && (
-                        <div>
-                            <h3>{overview.name} ({overview.symbol})</h3>
-                            <p>{overview.description}</p>
-                            <p><strong>Sector:</strong> {overview.sector}</p>
-                            <p><strong>Industry:</strong> {overview.industry}</p>
-                            <p><strong>Market Cap:</strong> {overview.marketCap}</p>
-                            <p><strong>Website:</strong> <a href={overview.website} target="_blank" rel="noreferrer">{overview.website}</a></p>
+                        <div style={{ 
+                            padding: 20, 
+                            border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, 
+                            borderRadius: '8px', 
+                            background: darkMode ? '#1e1e1e' : '#fff' 
+                        }}>
+                            <h3 style={{ margin: '0 0 15px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                                Company Overview
+                            </h3>
+                            
+                            {/* Header: Name and Ticker */}
+                            <div style={{ marginBottom: 15, borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingBottom: 10 }}>
+                                <h4 style={{ margin: 0, fontWeight: 'bold' }}>
+                                    {overview.name} ({overview.symbol})
+                                </h4>
+                            </div>
+
+                            {/* Description */}
+                            <p style={{ lineHeight: '1.6', fontSize: '14px', color: darkMode ? '#ccc' : '#444' }}>
+                                {overview.description}
+                            </p>
+
+                            {/* Key Financial and Sector Info */}
+                            <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', fontSize: '14px' }}>
+                                
+                                <div>
+                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Sector:</strong> {overview.sector}
+                                </div>
+                                
+                                <div>
+                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Industry:</strong> {overview.industry}
+                                </div>
+
+                                <div>
+                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Market Cap:</strong> {overview.marketCap}
+                                </div>
+                                
+                                <div>
+                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Website:</strong> 
+                                    <a 
+                                        href={overview.website} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        style={{ color: darkMode ? '#90caf9' : '#2196f3', textDecoration: 'none' }}
+                                    >
+                                        Link
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -506,7 +651,7 @@ export default function StocksDashboard() {
             {/* HypeMeter Tab Content */}
             {activeTab === 'hype' && (
                 <div>
-                    <h3 style={{ marginBottom: '16px' }}>HypeMeter for ${ticker}</h3>
+                    <h3 style={{ marginBottom: '16px' }}>HypeMeter for {ticker}</h3>
 
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                         {hypeTimeframes.map((tf) => (
@@ -521,7 +666,7 @@ export default function StocksDashboard() {
 
                     {hypeData && (
                         <>
-
+                            
 
                             <div style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
                                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -587,22 +732,22 @@ export default function StocksDashboard() {
                                     💡 How the Hype Score is Calculated
                                 </h4>
                                 <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '1.4', color: darkMode ? '#ccc' : '#444' }}>
-                                    The Hype Score (0-100%) is calculated by aggregating data from top finance subreddits ({hypeData.timeframe} timeframe) based on four weighted factors:
+                                    The **Hype Score** (0-100%) is calculated by aggregating data from top finance subreddits ({hypeData.timeframe} timeframe) based on four weighted factors:
                                 </p>
                                 <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '13px', color: darkMode ? '#ccc' : '#444' }}>
-                                    <li>Mention Score (Max 30%): Based on the sheer volume of posts mentioning the ticker.</li>
-                                    <li>Sentiment Score (Max 40%): Calculated from the net positive vs. negative sentiment of all analyzed posts.</li>
-                                    <li>Engagement Score (Max 20%): Measures the average upvotes and comments on the top posts, indicating user interaction.</li>
-                                    <li>Trend Score (Max 10%): Weighs posts from the last 6 hours more heavily to capture recent activity.</li>
+                                    <li>**Mention Score (Max 30%):** Based on the sheer volume of posts mentioning the ticker.</li>
+                                    <li>**Sentiment Score (Max 40%):** Calculated from the net positive vs. negative sentiment of all analyzed posts.</li>
+                                    <li>**Engagement Score (Max 20%):** Measures the average upvotes and comments on the top posts, indicating user interaction.</li>
+                                    <li>**Trend Score (Max 10%):** Weighs posts from the last 6 hours more heavily to capture recent activity.</li>
                                 </ul>
                                 {/* START: Added Sentiment Score Explanation */}
                                 <h5 style={{ margin: '15px 0 5px 0', color: darkMode ? '#90caf9' : '#0097a7', fontSize: '13px' }}>
                                     Details: Individual Post Sentiment Score
                                 </h5>
                                 <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '12px', color: darkMode ? '#bbb' : '#555' }}>
-                                    <li>Lexicon: Sentiment is determined using the AFINN-165 wordlist (over 3,300 emotional words).</li>
-                                    <li>Word Scoring: Each recognized word is assigned a fixed score from -5 (negative) to +5 (positive).</li>
-                                    <li>Calculation: The post's total `sentimentScore` is the sum of all scores of the emotional words found in its title and body.</li>
+                                    <li>**Lexicon:** Sentiment is determined using the AFINN-165 wordlist (over 3,300 emotional words).</li>
+                                    <li>**Word Scoring:** Each recognized word is assigned a fixed score from -5 (negative) to +5 (positive).</li>
+                                    <li>**Calculation:** The post's total `sentimentScore` is the sum of all scores of the emotional words found in its title and body.</li>
                                 </ul>
                                 {/* END: Added Sentiment Score Explanation */}
                             </div>

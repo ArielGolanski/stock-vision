@@ -57,7 +57,6 @@ const Dashboard = () => {
       <div style={{ display: 'flex', marginTop: '10px', padding: '0 20px' }}>
         {/* Left side: Main content */}
         <main style={{ flex: 1 }}>
-          {userName && <h2>Welcome, {userName}!</h2>}
           <StocksDashboard />
         </main>
 
