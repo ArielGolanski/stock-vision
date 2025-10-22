@@ -44,5 +44,5 @@ jobs:
         run: |
           git add --all
           git commit -m "Update models"
-          git push origin main
+          git push
        
