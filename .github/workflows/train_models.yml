@@ -43,13 +43,6 @@ jobs:
       - name: Push to remote
         run: |
           git add --all
-          # Check if there are any changes
-          if ! git diff --staged --quiet; then
-            echo "There are changes to commit"
-            # [ci skip] prevents the workflow to trigger itself in infinite loop
-            git commit -m "Update models"
-            git push origin main
-          else
-            echo "No changes to commit"
-          fi
+          git commit -m "Update models" [ci skip]
+          git push origin main
        
