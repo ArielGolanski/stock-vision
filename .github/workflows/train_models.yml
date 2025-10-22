@@ -43,6 +43,6 @@ jobs:
       - name: Push to remote
         run: |
           git add --all
-          git commit -m "Update models" [ci skip]
+          git commit -m "Update models"
           git push origin main
        
