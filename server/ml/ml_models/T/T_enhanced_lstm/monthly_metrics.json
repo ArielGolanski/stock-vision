@@ -20,5 +20,27 @@
             "RSI"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "T",
+        "target": "Monthly Change %",
+        "timestamp": "2025-10-22 20:08:24",
+        "MSE": 13.829876,
+        "RMSE": 3.718854,
+        "MAE": 3.080036,
+        "MAPE": 137.465274,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI"
+        ],
+        "training_len": 1988
     }
 ]

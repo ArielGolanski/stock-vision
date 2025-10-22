@@ -20,5 +20,27 @@
             "RSI"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "IBM",
+        "target": "Monthly Change %",
+        "timestamp": "2025-10-22 20:06:45",
+        "MSE": 24.167618,
+        "RMSE": 4.916057,
+        "MAE": 3.903919,
+        "MAPE": 178.84876,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI"
+        ],
+        "training_len": 1988
     }
 ]

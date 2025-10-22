@@ -20,5 +20,27 @@
             "RSI"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "AAPL",
+        "target": "Monthly Change %",
+        "timestamp": "2025-10-22 20:05:14",
+        "MSE": 14.264102,
+        "RMSE": 3.776785,
+        "MAE": 2.873735,
+        "MAPE": 172.239254,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI"
+        ],
+        "training_len": 1988
     }
 ]

@@ -21,5 +21,28 @@
             "Monthly Change %"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "T",
+        "target": "Daily Change %",
+        "timestamp": "2025-10-22 20:07:35",
+        "MSE": 1.88314,
+        "RMSE": 1.372276,
+        "MAE": 1.015355,
+        "MAPE": 117.348912,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
     }
 ]

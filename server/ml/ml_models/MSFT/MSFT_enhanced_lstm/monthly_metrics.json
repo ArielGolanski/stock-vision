@@ -64,5 +64,27 @@
             "RSI"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "MSFT",
+        "target": "Monthly Change %",
+        "timestamp": "2025-10-22 20:03:43",
+        "MSE": 11.974324,
+        "RMSE": 3.460394,
+        "MAE": 2.497962,
+        "MAPE": 107.936797,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI"
+        ],
+        "training_len": 1988
     }
 ]
