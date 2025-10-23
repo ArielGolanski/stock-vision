@@ -14,7 +14,8 @@ app.use(express.json());
 
 // Mongo
 const connectionString = process.env.ATLAS_CONNECTION_STRING || process.env.CONNECTION_STRING;
-mongoose.connect(connectionString)
+// const connectionString = process.env.CONNECTION_STRING;
+mongoose.connect(process.env.CONNECTION_STRING)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 

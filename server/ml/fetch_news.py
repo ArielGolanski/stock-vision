@@ -4,8 +4,11 @@ from datetime import datetime
 from textblob import TextBlob
 import pandas as pd
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv("../config/.env")
+ENV_PATH =(Path(__file__).parent / "../config/.env").resolve()
+
+load_dotenv(ENV_PATH)
 
 # ----------------------------------------
 # Reddit API setup
