@@ -12,3 +12,9 @@ seaborn
 jupyter
 papermill
 praw
+textblob
+dotenv
+pathlib
+os
+datetime
+
