@@ -30,6 +30,9 @@ jobs:
       - name: Fetch fresh data
         run: python ../fetch_data.py
 
+      - name: Fetch Reddit sentiment
+        run: python ../fetch_news.py
+
       - name: Run notebook
         run: papermill Models_Daily_Monthly.ipynb Models_Daily_Monthly.ipynb
 
