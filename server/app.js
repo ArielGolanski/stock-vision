@@ -41,6 +41,9 @@ app.use('/api/accuracy', accuracyRoutes);
 const chatRoutes = require('./routes/chat');
 app.use('/api/chat', chatRoutes);
 
+const competitorPredictionsRoutes = require('./routes/competitorPredictions');
+app.use('/api/competitor-predictions', competitorPredictionsRoutes);
+
 // Root check
 app.get('/', (_, res) => res.send('Server is running 🚀'));
 
