@@ -2,11 +2,11 @@
     {
         "ticker": "MSFT",
         "target": "Monthly Change %",
-        "timestamp": "2025-10-21 11:32:28",
-        "MSE": 8.805291,
-        "RMSE": 2.967371,
-        "MAE": 2.142819,
-        "MAPE": 99.458299,
+        "timestamp": "2025-10-27 09:27:59",
+        "MSE": 9.830095,
+        "RMSE": 3.135298,
+        "MAE": 2.352026,
+        "MAPE": 139.814812,
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -17,152 +17,8 @@
             "MACD",
             "MACD_Signal",
             "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "MSFT",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-21 12:15:38",
-        "MSE": 10.860592,
-        "RMSE": 3.295541,
-        "MAE": 2.404074,
-        "MAPE": 136.41418,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "MSFT",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-21 12:34:03",
-        "MSE": 9.532655,
-        "RMSE": 3.0875,
-        "MAE": 2.238834,
-        "MAPE": 110.053744,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "MSFT",
-        "target": "Monthly Change %",
-<<<<<<< HEAD
-        "timestamp": "2025-10-24 00:58:19",
-        "MSE": 9.882658,
-        "RMSE": 3.143669,
-        "MAE": 2.412023,
-        "MAPE": 143.832404,
-=======
-        "timestamp": "2025-10-23 17:35:13",
-        "MSE": 8.670786,
-        "RMSE": 2.94462,
-        "MAE": 2.188583,
-        "MAPE": 126.556923,
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-<<<<<<< HEAD
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "MSFT",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-25 00:59:45",
-        "MSE": 8.9758,
-        "RMSE": 2.995964,
-        "MAE": 2.275247,
-        "MAPE": 134.946092,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "MSFT",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-26 01:05:21",
-        "MSE": 12.592255,
-        "RMSE": 3.548557,
-        "MAE": 2.918098,
-        "MAPE": 198.205339,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "MSFT",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-27 01:06:13",
-        "MSE": 9.619292,
-        "RMSE": 3.101498,
-        "MAE": 2.258324,
-        "MAPE": 121.52898,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-=======
             "RSI",
             "Reddit Sentiment"
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         ],
         "training_len": 1988
     }

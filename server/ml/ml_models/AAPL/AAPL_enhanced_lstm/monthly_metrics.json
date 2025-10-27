@@ -2,11 +2,11 @@
     {
         "ticker": "AAPL",
         "target": "Monthly Change %",
-        "timestamp": "2025-10-21 12:38:51",
-        "MSE": 17.35372,
-        "RMSE": 4.16578,
-        "MAE": 3.251244,
-        "MAPE": 211.600063,
+        "timestamp": "2025-10-27 09:29:59",
+        "MSE": 12.229981,
+        "RMSE": 3.497139,
+        "MAE": 2.611649,
+        "MAPE": 150.913014,
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -17,108 +17,8 @@
             "MACD",
             "MACD_Signal",
             "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Monthly Change %",
-<<<<<<< HEAD
-        "timestamp": "2025-10-24 01:00:21",
-        "MSE": 14.898756,
-        "RMSE": 3.859891,
-        "MAE": 2.86043,
-        "MAPE": 145.248112,
-=======
-        "timestamp": "2025-10-23 17:36:42",
-        "MSE": 15.915934,
-        "RMSE": 3.989478,
-        "MAE": 3.135444,
-        "MAPE": 195.730322,
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-<<<<<<< HEAD
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-25 01:01:48",
-        "MSE": 15.245623,
-        "RMSE": 3.904564,
-        "MAE": 2.95189,
-        "MAPE": 171.554965,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-26 01:07:29",
-        "MSE": 16.082318,
-        "RMSE": 4.010277,
-        "MAE": 3.126289,
-        "MAPE": 202.728052,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-27 01:07:46",
-        "MSE": 13.532622,
-        "RMSE": 3.678671,
-        "MAE": 2.802986,
-        "MAPE": 169.560565,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-=======
             "RSI",
             "Reddit Sentiment"
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         ],
         "training_len": 1988
     }

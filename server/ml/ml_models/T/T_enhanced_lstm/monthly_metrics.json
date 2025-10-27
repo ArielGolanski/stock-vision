@@ -2,11 +2,11 @@
     {
         "ticker": "T",
         "target": "Monthly Change %",
-        "timestamp": "2025-10-21 12:48:51",
-        "MSE": 9.167612,
-        "RMSE": 3.027806,
-        "MAE": 2.43249,
-        "MAPE": 137.427561,
+        "timestamp": "2025-10-27 09:34:05",
+        "MSE": 16.786117,
+        "RMSE": 4.097086,
+        "MAE": 3.407804,
+        "MAPE": 144.054699,
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -17,108 +17,8 @@
             "MACD",
             "MACD_Signal",
             "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Monthly Change %",
-<<<<<<< HEAD
-        "timestamp": "2025-10-24 01:04:19",
-        "MSE": 13.50722,
-        "RMSE": 3.675217,
-        "MAE": 3.02305,
-        "MAPE": 134.417177,
-=======
-        "timestamp": "2025-10-23 17:39:40",
-        "MSE": 26.286256,
-        "RMSE": 5.127012,
-        "MAE": 4.34837,
-        "MAPE": 192.082934,
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-<<<<<<< HEAD
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-25 01:05:58",
-        "MSE": 10.731069,
-        "RMSE": 3.275831,
-        "MAE": 2.646187,
-        "MAPE": 127.488502,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-26 01:11:29",
-        "MSE": 8.839113,
-        "RMSE": 2.973065,
-        "MAE": 2.384159,
-        "MAPE": 138.156335,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-27 01:10:47",
-        "MSE": 6.617361,
-        "RMSE": 2.572423,
-        "MAE": 2.050814,
-        "MAPE": 176.482856,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-=======
             "RSI",
             "Reddit Sentiment"
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         ],
         "training_len": 1988
     }

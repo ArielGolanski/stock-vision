@@ -2,11 +2,11 @@
     {
         "ticker": "AAPL",
         "target": "Daily Change %",
-        "timestamp": "2025-10-21 12:36:32",
-        "MSE": 3.408459,
-        "RMSE": 1.846201,
-        "MAE": 1.269797,
-        "MAPE": 187.651701,
+        "timestamp": "2025-10-27 09:28:57",
+        "MSE": 3.165507,
+        "RMSE": 1.779187,
+        "MAE": 1.183178,
+        "MAPE": 104.957313,
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -18,110 +18,7 @@
             "MACD_Signal",
             "MACD_Histogram",
             "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Daily Change %",
-<<<<<<< HEAD
-        "timestamp": "2025-10-24 00:59:23",
-        "MSE": 3.191739,
-        "RMSE": 1.786544,
-        "MAE": 1.183384,
-        "MAPE": 152.346547,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-25 01:00:44",
-        "MSE": 3.912664,
-        "RMSE": 1.978046,
-        "MAE": 1.434584,
-        "MAPE": 299.7534,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-26 01:06:25",
-        "MSE": 3.49142,
-        "RMSE": 1.868534,
-        "MAE": 1.300146,
-        "MAPE": 222.719384,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "AAPL",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-27 01:06:59",
-        "MSE": 3.415277,
-        "RMSE": 1.848047,
-        "MAE": 1.273765,
-        "MAPE": 198.194064,
-=======
-        "timestamp": "2025-10-23 17:35:59",
-        "MSE": 3.185042,
-        "RMSE": 1.784668,
-        "MAE": 1.183415,
-        "MAPE": 109.028121,
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-<<<<<<< HEAD
-=======
             "Reddit Sentiment",
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
             "Monthly Change %"
         ],
         "training_len": 1988

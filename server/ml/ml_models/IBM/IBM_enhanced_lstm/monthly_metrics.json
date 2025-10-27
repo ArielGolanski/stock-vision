@@ -2,11 +2,11 @@
     {
         "ticker": "IBM",
         "target": "Monthly Change %",
-        "timestamp": "2025-10-21 12:44:00",
-        "MSE": 29.965076,
-        "RMSE": 5.474037,
-        "MAE": 4.421298,
-        "MAPE": 204.832415,
+        "timestamp": "2025-10-27 09:32:05",
+        "MSE": 34.17192,
+        "RMSE": 5.845675,
+        "MAE": 4.899438,
+        "MAPE": 320.199516,
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -17,108 +17,8 @@
             "MACD",
             "MACD_Signal",
             "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Monthly Change %",
-<<<<<<< HEAD
-        "timestamp": "2025-10-24 01:02:20",
-        "MSE": 27.455919,
-        "RMSE": 5.23984,
-        "MAE": 4.26285,
-        "MAPE": 224.733801,
-=======
-        "timestamp": "2025-10-23 17:38:11",
-        "MSE": 34.242649,
-        "RMSE": 5.851722,
-        "MAE": 4.794203,
-        "MAPE": 254.639148,
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-<<<<<<< HEAD
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-25 01:03:57",
-        "MSE": 30.606553,
-        "RMSE": 5.532319,
-        "MAE": 4.48923,
-        "MAPE": 212.628682,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-26 01:09:27",
-        "MSE": 20.150996,
-        "RMSE": 4.488986,
-        "MAE": 3.29124,
-        "MAPE": 116.300008,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Monthly Change %",
-        "timestamp": "2025-10-27 01:09:15",
-        "MSE": 26.160734,
-        "RMSE": 5.114756,
-        "MAE": 3.846039,
-        "MAPE": 206.770518,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI"
-=======
             "RSI",
             "Reddit Sentiment"
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         ],
         "training_len": 1988
     }

@@ -2,11 +2,11 @@
     {
         "ticker": "T",
         "target": "Daily Change %",
-        "timestamp": "2025-10-21 12:46:31",
-        "MSE": 1.940105,
-        "RMSE": 1.392876,
-        "MAE": 1.037421,
-        "MAPE": 130.597353,
+        "timestamp": "2025-10-27 09:33:04",
+        "MSE": 2.859098,
+        "RMSE": 1.690887,
+        "MAE": 1.353255,
+        "MAPE": 277.326349,
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -18,110 +18,7 @@
             "MACD_Signal",
             "MACD_Histogram",
             "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Daily Change %",
-<<<<<<< HEAD
-        "timestamp": "2025-10-24 01:03:18",
-        "MSE": 1.852741,
-        "RMSE": 1.361154,
-        "MAE": 1.001996,
-        "MAPE": 109.303983,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-25 01:05:00",
-        "MSE": 2.225584,
-        "RMSE": 1.491839,
-        "MAE": 1.145373,
-        "MAPE": 187.158195,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-26 01:10:28",
-        "MSE": 1.817283,
-        "RMSE": 1.348066,
-        "MAE": 0.988554,
-        "MAPE": 101.688108,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "T",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-27 01:10:01",
-        "MSE": 1.824628,
-        "RMSE": 1.350788,
-        "MAE": 0.99168,
-        "MAPE": 103.503731,
-=======
-        "timestamp": "2025-10-23 17:38:57",
-        "MSE": 1.788784,
-        "RMSE": 1.337454,
-        "MAE": 0.975494,
-        "MAPE": 99.581299,
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-<<<<<<< HEAD
-=======
             "Reddit Sentiment",
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
             "Monthly Change %"
         ],
         "training_len": 1988

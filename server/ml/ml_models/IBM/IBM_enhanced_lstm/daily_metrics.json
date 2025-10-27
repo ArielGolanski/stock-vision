@@ -2,11 +2,11 @@
     {
         "ticker": "IBM",
         "target": "Daily Change %",
-        "timestamp": "2025-10-21 12:41:21",
-        "MSE": 3.505277,
-        "RMSE": 1.872238,
-        "MAE": 1.347325,
-        "MAPE": 361.69661,
+        "timestamp": "2025-10-27 09:31:01",
+        "MSE": 3.515744,
+        "RMSE": 1.875032,
+        "MAE": 1.351768,
+        "MAPE": 365.734715,
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -18,110 +18,7 @@
             "MACD_Signal",
             "MACD_Histogram",
             "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Daily Change %",
-<<<<<<< HEAD
-        "timestamp": "2025-10-24 01:01:20",
-        "MSE": 3.169672,
-        "RMSE": 1.780357,
-        "MAE": 1.243506,
-        "MAPE": 279.024623,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-25 01:02:52",
-        "MSE": 3.041404,
-        "RMSE": 1.743962,
-        "MAE": 1.205599,
-        "MAPE": 241.231633,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-26 01:08:29",
-        "MSE": 2.85892,
-        "RMSE": 1.690834,
-        "MAE": 1.140854,
-        "MAPE": 175.804182,
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-            "Monthly Change %"
-        ],
-        "training_len": 1988
-    },
-    {
-        "ticker": "IBM",
-        "target": "Daily Change %",
-        "timestamp": "2025-10-27 01:08:32",
-        "MSE": 3.024113,
-        "RMSE": 1.738998,
-        "MAE": 1.196728,
-        "MAPE": 235.641697,
-=======
-        "timestamp": "2025-10-23 17:37:28",
-        "MSE": 2.841253,
-        "RMSE": 1.685602,
-        "MAE": 1.133578,
-        "MAPE": 164.262096,
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
-        "model": "Enhanced LSTM",
-        "features": [
-            "Daily Change %",
-            "Volume Change %",
-            "High_Low_Pct",
-            "Open_Close_Pct",
-            "Volatility",
-            "MACD",
-            "MACD_Signal",
-            "MACD_Histogram",
-            "RSI",
-<<<<<<< HEAD
-=======
             "Reddit Sentiment",
->>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
             "Monthly Change %"
         ],
         "training_len": 1988
