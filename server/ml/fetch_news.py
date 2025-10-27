@@ -107,10 +107,10 @@ def fetch_reddit_sentiment(ticker, limit=100, time_filter="day"):
 # Example run
 # ----------------------------------------
 if __name__ == "__main__":
-    ticker = "IBM"
+    ticker = "MSFT"
     data = fetch_reddit_sentiment(ticker)
     print(f"Reddit sentiment for {ticker}:")
-    print(pd.DataFrame(data["top_posts"])[["subreddit", "score", "sentiment"]].head())
+    # print(pd.DataFrame(data["top_posts"])[["subreddit", "score", "sentiment"]].head())
     print({
         "Positive": data["positive_pct"],
         "Neutral": data["neutral_pct"],
