@@ -71,6 +71,7 @@
     {
         "ticker": "MSFT",
         "target": "Daily Change %",
+<<<<<<< HEAD
         "timestamp": "2025-10-24 00:57:16",
         "MSE": 2.030843,
         "RMSE": 1.425077,
@@ -145,6 +146,13 @@
         "RMSE": 1.439281,
         "MAE": 1.029777,
         "MAPE": 212.00991,
+=======
+        "timestamp": "2025-10-23 17:34:30",
+        "MSE": 1.978733,
+        "RMSE": 1.406674,
+        "MAE": 0.988877,
+        "MAPE": 146.223888,
+>>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -156,6 +164,10 @@
             "MACD_Signal",
             "MACD_Histogram",
             "RSI",
+<<<<<<< HEAD
+=======
+            "Reddit Sentiment",
+>>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
             "Monthly Change %"
         ],
         "training_len": 1988

@@ -1,58 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTheme } from '../components/ThemeContext';
 import HeaderMenu from '../components/HeaderMenu';
-
-// Mock data for competitor predictions
-const mockCompetitorData = {
-  AAPL: {
-    daily: {
-      ourModel: { price: 175.50, change: 2.3, direction: 'up' },
-      wallStreetZen: { price: 173.20, change: 1.1, rating: 'Buy', confidence: 85 },
-      yahooFinance: { price: 176.80, change: 2.8, outlook: 'Positive', confidence: 78 }
-    },
-    monthly: {
-      ourModel: { price: 182.30, change: 4.2, direction: 'up' },
-      wallStreetZen: { price: 180.10, change: 3.1, rating: 'Strong Buy', confidence: 92 },
-      yahooFinance: { price: 185.50, change: 5.8, outlook: 'Very Positive', confidence: 88 }
-    }
-  },
-  MSFT: {
-    daily: {
-      ourModel: { price: 345.20, change: -0.8, direction: 'down' },
-      wallStreetZen: { price: 348.10, change: 0.5, rating: 'Hold', confidence: 72 },
-      yahooFinance: { price: 342.80, change: -1.2, outlook: 'Neutral', confidence: 65 }
-    },
-    monthly: {
-      ourModel: { price: 355.40, change: 2.1, direction: 'up' },
-      wallStreetZen: { price: 352.20, change: 1.3, rating: 'Buy', confidence: 81 },
-      yahooFinance: { price: 358.90, change: 3.2, outlook: 'Positive', confidence: 79 }
-    }
-  },
-  IBM: {
-    daily: {
-      ourModel: { price: 142.80, change: 0.9, direction: 'up' },
-      wallStreetZen: { price: 141.20, change: 0.2, rating: 'Hold', confidence: 68 },
-      yahooFinance: { price: 144.10, change: 1.5, outlook: 'Positive', confidence: 71 }
-    },
-    monthly: {
-      ourModel: { price: 148.50, change: 3.2, direction: 'up' },
-      wallStreetZen: { price: 146.80, change: 2.1, rating: 'Buy', confidence: 76 },
-      yahooFinance: { price: 150.20, change: 4.1, outlook: 'Positive', confidence: 82 }
-    }
-  },
-  T: {
-    daily: {
-      ourModel: { price: 18.45, change: -1.2, direction: 'down' },
-      wallStreetZen: { price: 18.80, change: -0.5, rating: 'Hold', confidence: 58 },
-      yahooFinance: { price: 18.20, change: -1.8, outlook: 'Neutral', confidence: 62 }
-    },
-    monthly: {
-      ourModel: { price: 19.20, change: 1.8, direction: 'up' },
-      wallStreetZen: { price: 18.90, change: 0.9, rating: 'Hold', confidence: 64 },
-      yahooFinance: { price: 19.50, change: 2.3, outlook: 'Positive', confidence: 69 }
-    }
-  }
-};
+import { API_URL } from '../config';
 
 // Helper function to get change color
 const getChangeColor = (change, darkMode) => {
@@ -158,11 +107,43 @@ function CompetitorPredictions() {
   const { darkMode } = useTheme();
   const [selectedTicker, setSelectedTicker] = useState('AAPL');
   const [selectedType, setSelectedType] = useState('daily');
+  const [currentData, setCurrentData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const tickers = ['AAPL', 'MSFT', 'IBM', 'T'];
   const types = ['daily', 'monthly'];
 
-  const currentData = mockCompetitorData[selectedTicker][selectedType];
+  // Fetch competitor predictions when ticker or type changes
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(
+          `${API_URL}/api/competitor-predictions?ticker=${selectedTicker}&type=${selectedType}`
+        );
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch predictions');
+        }
+        
+        const data = await response.json();
+        setCurrentData({
+          ourModel: data.ourModel,
+          wallStreetZen: data.wallStreetZen,
+          yahooFinance: data.yahooFinance
+        });
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching competitor predictions:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedTicker, selectedType]);
 
   return (
     <div className={`p-6 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -224,8 +205,27 @@ function CompetitorPredictions() {
           </div>
         </div>
 
-        {/* Prediction Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Loading State */}
+        {loading && (
+          <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+            <p className="mt-2">Loading predictions...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className={`p-4 rounded-lg ${darkMode ? 'bg-red-900 border border-red-700' : 'bg-red-50 border border-red-200'}`}>
+            <p className={`${darkMode ? 'text-red-200' : 'text-red-800'}`}>
+              Error loading predictions: {error}
+            </p>
+          </div>
+        )}
+
+        {/* Prediction Cards - only show if not loading and has data */}
+        {!loading && currentData && !error && (
+          <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <PredictionCard 
             title="Our AI Model" 
             data={currentData.ourModel} 
@@ -353,6 +353,8 @@ function CompetitorPredictions() {
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

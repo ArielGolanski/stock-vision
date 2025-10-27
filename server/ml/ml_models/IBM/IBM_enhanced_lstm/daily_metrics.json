@@ -25,6 +25,7 @@
     {
         "ticker": "IBM",
         "target": "Daily Change %",
+<<<<<<< HEAD
         "timestamp": "2025-10-24 01:01:20",
         "MSE": 3.169672,
         "RMSE": 1.780357,
@@ -99,6 +100,13 @@
         "RMSE": 1.738998,
         "MAE": 1.196728,
         "MAPE": 235.641697,
+=======
+        "timestamp": "2025-10-23 17:37:28",
+        "MSE": 2.841253,
+        "RMSE": 1.685602,
+        "MAE": 1.133578,
+        "MAPE": 164.262096,
+>>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -110,6 +118,10 @@
             "MACD_Signal",
             "MACD_Histogram",
             "RSI",
+<<<<<<< HEAD
+=======
+            "Reddit Sentiment",
+>>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
             "Monthly Change %"
         ],
         "training_len": 1988

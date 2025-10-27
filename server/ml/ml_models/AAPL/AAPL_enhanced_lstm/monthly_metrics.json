@@ -24,11 +24,19 @@
     {
         "ticker": "AAPL",
         "target": "Monthly Change %",
+<<<<<<< HEAD
         "timestamp": "2025-10-24 01:00:21",
         "MSE": 14.898756,
         "RMSE": 3.859891,
         "MAE": 2.86043,
         "MAPE": 145.248112,
+=======
+        "timestamp": "2025-10-23 17:36:42",
+        "MSE": 15.915934,
+        "RMSE": 3.989478,
+        "MAE": 3.135444,
+        "MAPE": 195.730322,
+>>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         "model": "Enhanced LSTM",
         "features": [
             "Daily Change %",
@@ -39,6 +47,7 @@
             "MACD",
             "MACD_Signal",
             "MACD_Histogram",
+<<<<<<< HEAD
             "RSI"
         ],
         "training_len": 1988
@@ -106,6 +115,10 @@
             "MACD_Signal",
             "MACD_Histogram",
             "RSI"
+=======
+            "RSI",
+            "Reddit Sentiment"
+>>>>>>> SV-48-integrate-natural-language-processing-in-stocks-prediction
         ],
         "training_len": 1988
     }

@@ -51,6 +51,19 @@ def load_enhanced_data(ticker, start_date="2015-01-01"):
     # Monthly change %
     df['Monthly Change %'] = df['Close'].pct_change(periods=21) * 100
 
+    # Fetch Reddit sentiment once per ticker
+    print(f"Fetching Reddit sentiment for {ticker}...")
+    try:
+        from fetch_news import fetch_reddit_sentiment
+        reddit_sentiment = fetch_reddit_sentiment(ticker)
+        sentiment_score = reddit_sentiment["average_sentiment"]
+        print(f"Reddit sentiment score for: {ticker} is {sentiment_score}")
+    except Exception as e:
+        print(f"Error fetching Reddit sentiment for {ticker}: {e}")
+        sentiment_score = 0
+    
+    df["Reddit Sentiment"] = sentiment_score
+
     df = df.dropna().reset_index()
     return df
 
@@ -58,7 +71,7 @@ def prepare_features(df, target_column):
     """Return features array, target array and feature names."""
     feature_columns = [
         'Daily Change %', 'Volume Change %', 'High_Low_Pct', 'Open_Close_Pct',
-        'Volatility', 'MACD', 'MACD_Signal', 'MACD_Histogram', 'RSI'
+        'Volatility', 'MACD', 'MACD_Signal', 'MACD_Histogram', 'RSI', 'Reddit Sentiment'
     ]
     if target_column != 'Monthly Change %':
         feature_columns.append('Monthly Change %')

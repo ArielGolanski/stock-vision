@@ -11,3 +11,9 @@ matplotlib
 seaborn
 jupyter
 papermill
+praw
+textblob
+dotenv
+pathlib
+datetime
+
