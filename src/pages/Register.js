@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 
@@ -10,12 +10,38 @@ const Register = () => {
   const [repeatPassword, setRepeatPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [brokerages, setBrokerages] = useState([]);
+  const [selectedBrokerage, setSelectedBrokerage] = useState('');
+  const [customFeePerShare, setCustomFeePerShare] = useState(0.00);
+  const [customFeeMinimum, setCustomFeeMinimum] = useState(0.00);
   const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerificationStep, setIsVerificationStep] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+
+  useEffect(() => {
+    const fetchBrokerages = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/brokerages`);
+        const data = await res.json();
+        
+        if (res.ok) {
+          setBrokerages(data);
+          if (data.length > 0) {
+            setSelectedBrokerage(data[0]._id); 
+          }
+        } else {
+          console.error('Failed to fetch brokerages:', data.message);
+        }
+      } catch (err) {
+        console.error('Error connecting to brokerage API:', err);
+      }
+    };
+
+    fetchBrokerages();
+  }, []);
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePassword = (password) =>
@@ -35,12 +61,13 @@ const Register = () => {
     if (!validatePassword(password))
       return setError('Password must be at least 8 characters and include uppercase, lowercase, and a number');
     if (password !== repeatPassword) return setError('Passwords do not match');
+    if (!selectedBrokerage) return setError('Please select a brokerage');
 
     try {
       const res = await fetch(`${API_URL}/api/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, firstName, lastName }),
+        body: JSON.stringify({ email, password, firstName, lastName, brokerage: selectedBrokerage, customFeePerShare, customFeeMinimum }),
       });
       const data = await res.json();
 
@@ -100,6 +127,53 @@ const Register = () => {
               required
               style={{ padding: '10px', margin: '5px' }}
             />
+          </div>
+          <div style={{ margin: '5px' }}>
+            <select
+              value={selectedBrokerage}
+              onChange={(e) => setSelectedBrokerage(e.target.value)}
+              required
+              style={{ padding: '10px', width: '200px' }}
+              disabled={brokerages.length === 0}
+            >
+              {brokerages.length > 0 ? (
+                brokerages.map((brokerage) => (
+                  <option key={brokerage._id} value={brokerage._id}>
+                    {brokerage.name}
+                  </option>
+                ))
+              ) : (
+                <option value="">Loading brokerages...</option>
+              )}
+            </select>
+          </div>
+          <div style={{ margin: '5px' }}>
+            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                Buying and Selling Fee per Share (in usd$)
+                <input
+                  type="number"
+                  step="0.0001"
+                  placeholder="e.g., 0.005"
+                  value={customFeePerShare}
+                  onChange={(e) => setCustomFeePerShare(parseFloat(e.target.value) || 0)}
+                  required
+                  style={{ padding: '10px', margin: '5px', width: '200px' }}
+                />
+            </label>
+          </div>
+          <div style={{ margin: '5px' }}>
+            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                Minimun Fee per Buying/Selling Command
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g., 1.99"
+                  value={customFeeMinimum}
+                  onChange={(e) => setCustomFeeMinimum(parseFloat(e.target.value) || 0)}
+                  required
+                  style={{ padding: '10px', margin: '5px', width: '200px' }}
+                />
+            </label>
           </div>
           <div>
             <input

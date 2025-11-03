@@ -70,13 +70,37 @@ export default function StocksDashboard() {
     const [submitting, setSubmitting] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
 
-    // Get current user ID from token
+    // Risk Calculator State 
+    const [investmentAmount, setInvestmentAmount] = useState(1000); 
+    const [userFees, setUserFees] = useState({ feePerShare: 0, feeMinimum: 0 });
+    const [feesLoading, setFeesLoading] = useState(false);
+    // ----------------------------
+
+
+    // Get current user ID and FETCH FEES from token
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 setCurrentUserId(payload.id);
+
+                // --- FETCH FEES from /api/users/profile ---
+                setFeesLoading(true);
+                fetch(`${API_URL}/api/users/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                })
+                .then(res => res.json())
+                .then(data => {
+                    setUserFees({
+                        feePerShare: data.customFeePerShare || 0,
+                        feeMinimum: data.customFeeMinimum || 0,
+                    });
+                })
+                .catch(err => console.error("Error fetching user fees:", err))
+                .finally(() => setFeesLoading(false));
+                // ------------------------------------------
+
             } catch (err) {
                 console.error('Error parsing token:', err);
             }
@@ -341,6 +365,73 @@ export default function StocksDashboard() {
     }, [fetchHypeData]);
 
 
+    // --------------------------------------------------------------------------------------
+    // --- Risk Calculator Logic (MODIFIED to return array of 5 days) ---
+    // --------------------------------------------------------------------------------------
+    const riskCalculation = useMemo(() => {
+        if (!technicalInfo || !predictions.length || !investmentAmount || loading || feesLoading) return null;
+        
+        const currentPrice = technicalInfo.last_close; 
+        if (!currentPrice || currentPrice <= 0) return { error: "Current stock price not available." };
+        
+        // נשתמש רק ב-5 התחזיות הראשונות (ל-5 הימים הקרובים)
+        const fiveDayPredictions = predictions.slice(0, 5); 
+        
+        if (fiveDayPredictions.length === 0) return { error: "5-day prediction data not available." };
+
+        // 1. חישוב מספר מניות שניתן לקנות (קבוע לכל ימי התחזית)
+        const sharesToBuy = Math.floor(investmentAmount / currentPrice);
+        
+        if (sharesToBuy === 0) return { error: "Amount too small to buy even one share." };
+        
+        // 2. חישוב עלות עסקאות קבועה (Fees)
+        // עלות קנייה (Purchase cost):
+        const buyFee = Math.max(userFees.feePerShare * sharesToBuy, userFees.feeMinimum); 
+        const sellFeeBase = Math.max(userFees.feePerShare * sharesToBuy, userFees.feeMinimum); // בסיס עמלת מכירה
+        const totalBaseFees = buyFee + sellFeeBase; // סכום העמלות הקבוע (קנייה + מכירה)
+        const TAX_RATE = 0.25;
+
+        const results = fiveDayPredictions.map(p => {
+            const futurePrediction = p.predicted_close;
+            
+            // חישוב רווח ברוטו
+            const grossProfitPerShare = futurePrediction - currentPrice;
+            const grossProfitTotal = sharesToBuy * grossProfitPerShare;
+            
+            // חישוב מס
+            const taxableProfit = grossProfitTotal > 0 ? grossProfitTotal : 0;
+            const taxAmount = taxableProfit * TAX_RATE; 
+            
+            // חישוב רווח נטו
+            const netProfit = grossProfitTotal - totalBaseFees - taxAmount;
+
+            return {
+                date: p.date,
+                predictedClose: futurePrediction,
+                grossProfitTotal: grossProfitTotal,
+                totalFees: totalBaseFees,
+                taxAmount: taxAmount,
+                netProfit: netProfit,
+            };
+        });
+
+        // מציאת הרווח המקסימלי לשימוש בתצוגה
+        const maxProfitResult = results.reduce((max, current) => 
+            current.netProfit > max.netProfit ? current : max, results[0]
+        );
+
+        return {
+            currentPrice,
+            sharesToBuy,
+            ticker,
+            maxProfitResult,
+            results,
+            error: null,
+        };
+    }, [technicalInfo, predictions, investmentAmount, loading, feesLoading, userFees]);
+    // --------------------------------------------------------------------------------------
+
+
     const chartData = useMemo(() => {
         if (filteredHistory.length === 0) return null;
         const histData = filteredHistory.map(h => ({ x: h.date, y: h.close }));
@@ -428,9 +519,9 @@ export default function StocksDashboard() {
 
 
             <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-                {['chart', 'news', 'overview', 'discussion', 'hype'].map((tab) => (
+                {['chart', 'news', 'overview', 'discussion', 'hype',  'risk'].map((tab) => (
                     <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '6px 12px', borderRadius: '6px', border: activeTab === tab ? '2px solid #2196f3' : '1px solid #ccc', background: activeTab === tab ? '#2196f3' : 'transparent', color: activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
-                        {tab === 'hype' ? 'HypeMeter' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {tab === 'hype' ? 'HypeMeter' : tab === 'risk' ? 'Risk Calculator' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
                 ))}
             </div>
@@ -441,7 +532,7 @@ export default function StocksDashboard() {
                     {loading && <div>Loading…</div>}
                     {!loading && filteredHistory.length > 0 && (
                         <div>
-                            {/* START: NEW STYLED TECHNICAL INFO PANEL (Fixes 'stock' errors) */}
+                            {/* START: NEW STYLED TECHNICAL INFO PANEL */}
                             <div style={{ 
                                 marginBottom: 20, 
                                 padding: 16, 
@@ -450,7 +541,7 @@ export default function StocksDashboard() {
                                 background: darkMode ? '#1e1e1e' : '#fff' 
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15 }}>
-                                    {/* Logo Section (FIXED: using ticker) */}
+                                    {/* Logo Section */}
                                     {getStockLogo(ticker) ? (
                                         <img 
                                             src={getStockLogo(ticker)} 
@@ -571,6 +662,111 @@ export default function StocksDashboard() {
                     {loading && <div>Loading…</div>}
                 </>
             )}
+            
+            {/* --- Risk Calculator Tab Content (MODIFIED) --- */}
+            {activeTab === 'risk' && (
+                <div style={{ padding: '20px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
+                    <h3 style={{ margin: '0 0 15px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                        Risk Calculator: Net Profit Forecast (Next 5 Days)
+                    </h3>
+
+                    {(feesLoading || loading) ? (
+                        <p>Loading user data and stock info...</p>
+                    ) : (
+                        <div style={{ marginBottom: '20px', borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingBottom: '15px' }}>
+                            <div style={{ marginBottom: '15px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                <label style={{ fontWeight: 'bold' }}>
+                                    Investment Amount (USD):
+                                </label>
+                                <input
+                                    type="number"
+                                    step="100"
+                                    value={investmentAmount}
+                                    onChange={(e) => setInvestmentAmount(parseFloat(e.target.value) || 0)}
+                                    style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', width: '150px' }}
+                                />
+                            </div>
+
+                            <p style={{ fontSize: '13px', color: darkMode ? '#aaa' : '#666' }}>
+                                **Your Fees (from Settings)**: Fee Per Share: ${userFees.feePerShare.toFixed(4)}, Minimum Fee: ${userFees.feeMinimum.toFixed(2)}
+                            </p>
+                            <p style={{ fontSize: '13px', color: '#dc2626' }}>
+                                **Tax Rate Applied**: 25% on gross profit.
+                            </p>
+                            
+                            {riskCalculation?.currentPrice && (
+                                <p style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '10px' }}>
+                                    **Purchase Price**: ${riskCalculation.currentPrice.toFixed(2)} | **Shares Purchased**: {riskCalculation.sharesToBuy}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+
+                    {riskCalculation?.error && (
+                         <div style={{ color: '#dc2626', fontWeight: 'bold', padding: '10px', border: '1px solid #dc2626', borderRadius: '4px' }}>
+                            {riskCalculation.error}
+                        </div>
+                    )}
+                    
+                    {riskCalculation && riskCalculation.results?.length > 0 && (
+                        <div style={{ marginTop: '20px' }}>
+                            <h4 style={{ color: darkMode ? '#f1f1f1' : '#111', borderBottom: `1px dotted ${darkMode ? '#333' : '#eee'}`, paddingBottom: '10px' }}>
+                                📅 Daily Net Profit Forecast (Next 5 Days)
+                            </h4>
+                            
+                            {riskCalculation.maxProfitResult && (
+                                <div style={{ 
+                                    padding: '10px', 
+                                    marginBottom: '15px', 
+                                    background: riskCalculation.maxProfitResult.netProfit > 0 ? (darkMode ? '#0f4f3a' : '#dcfce7') : (darkMode ? '#4f0f0f' : '#fee2e2'), 
+                                    borderRadius: '6px',
+                                    fontWeight: 'bold',
+                                    textAlign: 'center'
+                                }}>
+                                    Optimal Sale Day: **{riskCalculation.maxProfitResult.date}** with Net Profit: 
+                                    <span style={{ color: riskCalculation.maxProfitResult.netProfit >= 0 ? '#059669' : '#dc2626', marginLeft: '5px' }}>
+                                        ${riskCalculation.maxProfitResult.netProfit.toFixed(2)}
+                                    </span>
+                                </div>
+                            )}
+
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: `2px solid ${darkMode ? '#444' : '#ccc'}`, textAlign: 'left' }}>
+                                        <th style={{ padding: '8px 4px' }}>Date</th>
+                                        <th style={{ padding: '8px 4px' }}>Predicted Close</th>
+                                        <th style={{ padding: '8px 4px', textAlign: 'right' }}>Gross Profit</th>
+                                        <th style={{ padding: '8px 4px', textAlign: 'right' }}>Fees + Tax</th>
+                                        <th style={{ padding: '8px 4px', textAlign: 'right' }}>Net Profit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {riskCalculation.results.map((r, index) => (
+                                        <tr 
+                                            key={index} 
+                                            style={{ 
+                                                borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`,
+                                                background: r.netProfit === riskCalculation.maxProfitResult.netProfit ? (darkMode ? '#3b3b00' : '#fffbe7') : 'transparent'
+                                            }}
+                                        >
+                                            <td style={{ padding: '8px 4px', fontWeight: 'bold' }}>{r.date}</td>
+                                            <td style={{ padding: '8px 4px' }}>${r.predictedClose.toFixed(2)}</td>
+                                            <td style={{ padding: '8px 4px', textAlign: 'right', color: r.grossProfitTotal >= 0 ? '#059669' : '#dc2626' }}>${r.grossProfitTotal.toFixed(2)}</td>
+                                            <td style={{ padding: '8px 4px', textAlign: 'right' }}>${(r.totalFees + r.taxAmount).toFixed(2)}</td>
+                                            <td style={{ padding: '8px 4px', textAlign: 'right', fontWeight: 'bold', color: r.netProfit >= 0 ? '#059669' : '#dc2626' }}>
+                                                ${r.netProfit.toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
+            {/* --- END Risk Calculator Tab Content --- */}
+
 
             {activeTab === 'news' && (
                 <div>

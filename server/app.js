@@ -15,7 +15,7 @@ app.use(express.json());
 // Mongo
 const connectionString = process.env.ATLAS_CONNECTION_STRING || process.env.CONNECTION_STRING;
 // const connectionString = process.env.CONNECTION_STRING;
-mongoose.connect(process.env.CONNECTION_STRING)
+mongoose.connect(connectionString)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
@@ -40,6 +40,9 @@ app.use('/api/accuracy', accuracyRoutes);
 
 const chatRoutes = require('./routes/chat');
 app.use('/api/chat', chatRoutes);
+
+const brokerageRoutes = require('./routes/brokerageRoutes');
+app.use('/api/brokerages', brokerageRoutes);
 
 const competitorPredictionsRoutes = require('./routes/competitorPredictions');
 app.use('/api/competitor-predictions', competitorPredictionsRoutes);
