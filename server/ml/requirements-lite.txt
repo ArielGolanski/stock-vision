@@ -10,7 +10,7 @@ joblib
 
 # --- ML Frameworks (CPU-only versions) ---
 tensorflow-cpu  # <--- Different for CPU only
-torch --index-url https://download.pytorch.org/whl/cpu  # <--- Different for CPU only
+torch --index-url https://download.pytorch.org/whl/cpu  # For CPU only
 
 # Data Fetching & Analysis
 yfinance
@@ -20,10 +20,11 @@ matplotlib
 seaborn
 
 # Notebook Execution
-papermill  # <--- This is enough, no need for jupyter
+papermill 
+ipykernel
 
 # Utilities
-python-dotenv  # <--- This is the correct name of "dotenv"
+python-dotenv
 
 # --- Removed packages ---
 # jupyter 
