@@ -1,7 +1,31 @@
+# Core Web/API
 fastapi
 uvicorn
+
+# Core Data/ML
 pandas
 numpy
 scikit-learn
-yfinance
 joblib
+
+# --- ML Frameworks (CPU-only versions) ---
+tensorflow-cpu  # <--- Different for CPU only
+torch --index-url https://download.pytorch.org/whl/cpu  # <--- Different for CPU only
+
+# Data Fetching & Analysis
+yfinance
+praw
+textblob
+matplotlib
+seaborn
+
+# Notebook Execution
+papermill  # <--- This is enough, no need for jupyter
+
+# Utilities
+python-dotenv  # <--- This is the correct name of "dotenv"
+
+# --- Removed packages ---
+# jupyter 
+# pathlib
+# datetime
