@@ -12,8 +12,8 @@ import {
     Title,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
-import { useTheme } from './ThemeContext';
-import { API_URL } from '../config';
+import { useTheme } from './ThemeContext'; // Assuming this context exists
+import { API_URL } from '../config'; // Assuming this config exists
 
 ChartJS.register(
     CategoryScale,
@@ -38,6 +38,315 @@ const periods = [
     { label: '10Y', value: '10y', days: 2520 },
 ];
 
+/** ----------------- START: Claude's Enhanced Loading Components ----------------- **/
+
+// Enhanced Loading Spinner Component
+function LoadingSpinner({ size = 40, color = '#2196f3' }) {
+    return (
+        <div style={{
+            width: size,
+            height: size,
+            border: `3px solid rgba(33, 150, 243, 0.1)`,
+            borderTop: `3px solid ${color}`,
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+            // Note: Keyframes must be defined in CSS/Style block outside of this component
+        }} />
+    );
+}
+
+// Skeleton Loader for Chart
+function ChartSkeleton({ darkMode }) {
+    return (
+        <div style={{
+            height: 500,
+            background: darkMode ? '#1e1e1e' : '#f5f5f5',
+            borderRadius: '8px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            {/* Shimmer effect */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: `linear-gradient(90deg, transparent, ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)'}, transparent)`,
+                animation: 'shimmer 1.5s infinite'
+            }} />
+            
+            {/* Fake chart bars */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%', gap: '4px', paddingTop: '40px' }}>
+                {[...Array(20)].map((_, i) => (
+                    <div key={i} style={{
+                        flex: 1,
+                        height: `${Math.random() * 80 + 20}%`,
+                        background: darkMode ? '#333' : '#e0e0e0',
+                        borderRadius: '2px 2px 0 0',
+                        // Note: Random height adds variety to the loading visualization
+                    }} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Skeleton for Technical Info Panel
+function TechnicalInfoSkeleton({ darkMode }) {
+    return (
+        <div style={{
+            marginBottom: 20,
+            padding: 16,
+            border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`,
+            borderRadius: '8px',
+            background: darkMode ? '#1e1e1e' : '#fff',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15 }}>
+                <div style={{
+                    width: 48,
+                    height: 48,
+                    marginRight: 16,
+                    borderRadius: '4px',
+                    background: darkMode ? '#333' : '#e0e0e0',
+                    animation: 'pulse 1.5s ease-in-out infinite'
+                }} />
+                <div style={{ flex: 1 }}>
+                    <div style={{
+                        width: '60%',
+                        height: 24,
+                        background: darkMode ? '#333' : '#e0e0e0',
+                        borderRadius: '4px',
+                        marginBottom: 8,
+                        animation: 'pulse 1.5s ease-in-out infinite'
+                    }} />
+                    <div style={{
+                        width: '40%',
+                        height: 16,
+                        background: darkMode ? '#333' : '#e0e0e0',
+                        borderRadius: '4px',
+                        animation: 'pulse 1.5s ease-in-out infinite'
+                    }} />
+                </div>
+            </div>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                borderTop: `1px solid ${darkMode ? '#333' : '#eee'}`,
+                paddingTop: 10
+            }}>
+                {[1, 2, 3].map(i => (
+                    <div key={i} style={{ flex: 1, textAlign: 'center' }}>
+                        <div style={{
+                            width: '80%',
+                            height: 20,
+                            margin: '0 auto 8px',
+                            background: darkMode ? '#333' : '#e0e0e0',
+                            borderRadius: '4px',
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                            animationDelay: `${i * 0.2}s`
+                        }} />
+                        <div style={{
+                            width: '60%',
+                            height: 14,
+                            margin: '0 auto',
+                            background: darkMode ? '#333' : '#e0e0e0',
+                            borderRadius: '4px',
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                            animationDelay: `${i * 0.2}s`
+                        }} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Loading state for lists (news, comments, posts, predictions)
+function ListSkeleton({ darkMode, count = 3 }) {
+    return (
+        <div>
+            {[...Array(count)].map((_, i) => (
+                <div key={i} style={{
+                    padding: '16px',
+                    borderRadius: '8px',
+                    background: darkMode ? '#1e1e1e' : '#fff',
+                    border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`,
+                    marginBottom: '12px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        width: '80%',
+                        height: 18,
+                        background: darkMode ? '#333' : '#e0e0e0',
+                        borderRadius: '4px',
+                        marginBottom: 10,
+                        animation: 'pulse 1.5s ease-in-out infinite',
+                        animationDelay: `${i * 0.15}s`
+                    }} />
+                    <div style={{
+                        width: '100%',
+                        height: 14,
+                        background: darkMode ? '#333' : '#e0e0e0',
+                        borderRadius: '4px',
+                        marginBottom: 6,
+                        animation: 'pulse 1.5s ease-in-out infinite',
+                        animationDelay: `${i * 0.15}s`
+                    }} />
+                    <div style={{
+                        width: '60%',
+                        height: 14,
+                        background: darkMode ? '#333' : '#e0e0e0',
+                        borderRadius: '4px',
+                        animation: 'pulse 1.5s ease-in-out infinite',
+                        animationDelay: `${i * 0.15}s`
+                    }} />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// Skeleton for HypeMeter
+function HypeMeterSkeleton({ darkMode }) {
+    return (
+        <div style={{
+            padding: '16px',
+            borderRadius: '8px',
+            background: darkMode ? '#1e1e1e' : '#fff',
+            border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`,
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <div style={{
+                    width: '50%',
+                    height: 24,
+                    margin: '0 auto 10px',
+                    background: darkMode ? '#333' : '#e0e0e0',
+                    borderRadius: '4px',
+                    animation: 'pulse 1.5s ease-in-out infinite'
+                }} />
+                <div style={{
+                    width: '120px',
+                    height: 60,
+                    margin: '10px auto',
+                    background: darkMode ? '#333' : '#e0e0e0',
+                    borderRadius: '8px',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    animationDelay: '0.1s'
+                }} />
+                <div style={{
+                    width: '70%',
+                    height: 14,
+                    margin: '0 auto',
+                    background: darkMode ? '#333' : '#e0e0e0',
+                    borderRadius: '4px',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    animationDelay: '0.2s'
+                }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} style={{ textAlign: 'center' }}>
+                        <div style={{
+                            width: '60px',
+                            height: 20,
+                            margin: '0 auto 8px',
+                            background: darkMode ? '#333' : '#e0e0e0',
+                            borderRadius: '4px',
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                            animationDelay: `${i * 0.3}s`
+                        }} />
+                        <div style={{
+                            width: '50px',
+                            height: 14,
+                            margin: '0 auto',
+                            background: darkMode ? '#333' : '#e0e0e0',
+                            borderRadius: '4px',
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                            animationDelay: `${i * 0.3}s`
+                        }} />
+                    </div>
+                ))}
+            </div>
+            <h4 style={{ borderTop: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, paddingTop: '16px', marginBottom: '10px' }}>Top Posts</h4>
+            <ListSkeleton darkMode={darkMode} count={3} />
+        </div>
+    );
+}
+
+// Skeleton for Overview
+function OverviewSkeleton({ darkMode }) {
+    return (
+        <div style={{ 
+            padding: 20, 
+            border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, 
+            borderRadius: '8px', 
+            background: darkMode ? '#1e1e1e' : '#fff',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            <div style={{ 
+                width: '50%', 
+                height: 24, 
+                background: darkMode ? '#333' : '#e0e0e0', 
+                borderRadius: '4px', 
+                marginBottom: 15, 
+                animation: 'pulse 1.5s ease-in-out infinite' 
+            }} />
+            
+            <div style={{ marginBottom: 15, borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingBottom: 10 }}>
+                <div style={{ 
+                    width: '70%', 
+                    height: 20, 
+                    background: darkMode ? '#333' : '#e0e0e0', 
+                    borderRadius: '4px', 
+                    margin: '0 0 5px 0', 
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    animationDelay: '0.1s'
+                }} />
+            </div>
+
+            {[...Array(4)].map((_, i) => (
+                <div key={i} style={{ 
+                    width: `${90 - i * 10}%`, 
+                    height: 14, 
+                    background: darkMode ? '#333' : '#e0e0e0', 
+                    borderRadius: '4px', 
+                    marginBottom: 8,
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    animationDelay: `${0.2 + i * 0.1}s`
+                }} />
+            ))}
+
+            <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', fontSize: '14px' }}>
+                {[...Array(4)].map((_, i) => (
+                    <div key={i}>
+                        <div style={{ 
+                            width: '80%', 
+                            height: 16, 
+                            background: darkMode ? '#333' : '#e0e0e0', 
+                            borderRadius: '4px',
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                            animationDelay: `${0.6 + i * 0.1}s`
+                        }} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/** ----------------- END: Claude's Enhanced Loading Components ----------------- **/
+
 export default function StocksDashboard() {
     const { darkMode } = useTheme();
 
@@ -48,7 +357,7 @@ export default function StocksDashboard() {
     const [filteredHistory, setFilteredHistory] = useState([]);
     const [predictions, setPredictions] = useState([]);
     const [technicalInfo, setTechnicalInfo] = useState({});
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false); // Used for chart/history/predictions/technicalInfo
     const [error, setError] = useState(null);
     const [periodChanges, setPeriodChanges] = useState({});
     const [activeTab, setActiveTab] = useState('chart');
@@ -164,6 +473,7 @@ export default function StocksDashboard() {
             setError(err.message);
             setFullHistory([]);
             setPredictions([]);
+            setTechnicalInfo({}); // Clear technical info on error
         } finally {
             setLoading(false);
         }
@@ -318,15 +628,17 @@ export default function StocksDashboard() {
     }, [fetchComments]);
 
     const getStockLogo = (symbol) => {
-    try {
-      return require(`../assets/${symbol.toLowerCase()}.png`);
-    } catch (error) {
-      console.warn(`Logo not found for ${symbol}`);
-      return null;
-    }
+        // This function is kept from the original to handle the logo display
+        try {
+          return require(`../assets/${symbol.toLowerCase()}.png`);
+        } catch (error) {
+          console.warn(`Logo not found for ${symbol}`);
+          return null;
+        }
     };
 
     function formatDate(dateString) {
+        // ... (formatDate logic is unchanged)
         const date = new Date(dateString);
         const now = new Date();
         const diffMs = now - date;
@@ -366,7 +678,7 @@ export default function StocksDashboard() {
 
 
     // --------------------------------------------------------------------------------------
-    // --- Risk Calculator Logic (MODIFIED to return array of 5 days) ---
+    // --- Risk Calculator Logic ---
     // --------------------------------------------------------------------------------------
     const riskCalculation = useMemo(() => {
         if (!technicalInfo || !predictions.length || !investmentAmount || loading || feesLoading) return null;
@@ -374,35 +686,28 @@ export default function StocksDashboard() {
         const currentPrice = technicalInfo.last_close; 
         if (!currentPrice || currentPrice <= 0) return { error: "Current stock price not available." };
         
-        // נשתמש רק ב-5 התחזיות הראשונות (ל-5 הימים הקרובים)
         const fiveDayPredictions = predictions.slice(0, 5); 
         
         if (fiveDayPredictions.length === 0) return { error: "5-day prediction data not available." };
 
-        // 1. חישוב מספר מניות שניתן לקנות (קבוע לכל ימי התחזית)
         const sharesToBuy = Math.floor(investmentAmount / currentPrice);
         
         if (sharesToBuy === 0) return { error: "Amount too small to buy even one share." };
         
-        // 2. חישוב עלות עסקאות קבועה (Fees)
-        // עלות קנייה (Purchase cost):
         const buyFee = Math.max(userFees.feePerShare * sharesToBuy, userFees.feeMinimum); 
-        const sellFeeBase = Math.max(userFees.feePerShare * sharesToBuy, userFees.feeMinimum); // בסיס עמלת מכירה
-        const totalBaseFees = buyFee + sellFeeBase; // סכום העמלות הקבוע (קנייה + מכירה)
+        const sellFeeBase = Math.max(userFees.feePerShare * sharesToBuy, userFees.feeMinimum);
+        const totalBaseFees = buyFee + sellFeeBase; 
         const TAX_RATE = 0.25;
 
         const results = fiveDayPredictions.map(p => {
             const futurePrediction = p.predicted_close;
             
-            // חישוב רווח ברוטו
             const grossProfitPerShare = futurePrediction - currentPrice;
             const grossProfitTotal = sharesToBuy * grossProfitPerShare;
             
-            // חישוב מס
             const taxableProfit = grossProfitTotal > 0 ? grossProfitTotal : 0;
             const taxAmount = taxableProfit * TAX_RATE; 
             
-            // חישוב רווח נטו
             const netProfit = grossProfitTotal - totalBaseFees - taxAmount;
 
             return {
@@ -415,7 +720,6 @@ export default function StocksDashboard() {
             };
         });
 
-        // מציאת הרווח המקסימלי לשימוש בתצוגה
         const maxProfitResult = results.reduce((max, current) => 
             current.netProfit > max.netProfit ? current : max, results[0]
         );
@@ -428,7 +732,7 @@ export default function StocksDashboard() {
             results,
             error: null,
         };
-    }, [technicalInfo, predictions, investmentAmount, loading, feesLoading, userFees]);
+    }, [technicalInfo, predictions, investmentAmount, loading, feesLoading, userFees, ticker]);
     // --------------------------------------------------------------------------------------
 
 
@@ -497,503 +801,544 @@ export default function StocksDashboard() {
 
 
     return (
-        <div style={{ padding: 20, background: darkMode ? '#2e2e2eff' : '#fafafa', color: darkMode ? '#f1f1f1' : '#111', borderRadius: '8px' }}>
-            <h2>Stocks Dashboard</h2>
+        <>
+            {/* Global Keyframes for Spin/Pulse/Shimmer Skeletons */}
+            <style>{`
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+                @keyframes shimmer {
+                    to { left: 100%; }
+                }
+            `}</style>
+        
 
-            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-                <select value={ticker} onChange={(e) => setTicker(e.target.value)}>
-                    <option value="MSFT">Microsoft</option>
-                    <option value="AAPL">Apple</option>
-                    <option value="T">AT&T</option>
-                    <option value="IBM">IBM</option>
-                </select>
+            <div style={{ padding: 20, background: darkMode ? '#2e2e2eff' : '#fafafa', color: darkMode ? '#f1f1f1' : '#111', borderRadius: '8px' }}>
+                <h2>Stocks Dashboard</h2>
 
-                <label>
-                    <input type="radio" checked={predictionType === 'daily'} onChange={() => setPredictionType('daily')} /> Daily
-                </label>
-                <label>
-                    <input type="radio" checked={predictionType === 'monthly'} onChange={() => setPredictionType('monthly')} /> Monthly
-                </label>
-            </div>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                    <select value={ticker} onChange={(e) => setTicker(e.target.value)}>
+                        <option value="MSFT">Microsoft</option>
+                        <option value="AAPL">Apple</option>
+                        <option value="T">AT&T</option>
+                        <option value="IBM">IBM</option>
+                    </select>
+
+                    <label>
+                        <input type="radio" checked={predictionType === 'daily'} onChange={() => setPredictionType('daily')} /> Daily
+                    </label>
+                    <label>
+                        <input type="radio" checked={predictionType === 'monthly'} onChange={() => setPredictionType('monthly')} /> Monthly
+                    </label>
+                </div>
 
 
 
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
-                {['chart', 'news', 'overview', 'discussion', 'hype',  'risk'].map((tab) => (
-                    <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '6px 12px', borderRadius: '6px', border: activeTab === tab ? '2px solid #2196f3' : '1px solid #ccc', background: activeTab === tab ? '#2196f3' : 'transparent', color: activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
-                        {tab === 'hype' ? 'HypeMeter' : tab === 'risk' ? 'Risk Calculator' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </button>
-                ))}
-            </div>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
+                    {['chart', 'news', 'overview', 'discussion', 'hype',  'risk'].map((tab) => (
+                        <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '6px 12px', borderRadius: '6px', border: activeTab === tab ? '2px solid #2196f3' : '1px solid #ccc', background: activeTab === tab ? '#2196f3' : 'transparent', color: activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
+                            {tab === 'hype' ? 'HypeMeter' : tab === 'risk' ? 'Risk Calculator' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        </button>
+                    ))}
+                </div>
 
-            {activeTab === 'chart' && (
-                <>
-                    {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-                    {loading && <div>Loading…</div>}
-                    {!loading && filteredHistory.length > 0 && (
-                        <div>
-                            {/* START: NEW STYLED TECHNICAL INFO PANEL */}
+                {/* ------------------- Chart Tab ------------------- */}
+                {activeTab === 'chart' && (
+                    <>
+                        {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+                        
+                        {loading ? (
+                            <div>
+                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 20, paddingTop: 10 }}>
+                                    <LoadingSpinner size={32} />
+                                    <span style={{ fontSize: '14px', color: darkMode ? '#aaa' : '#666' }}>
+                                        Loading stock data for {ticker}...
+                                    </span>
+                                </div>
+                                <TechnicalInfoSkeleton darkMode={darkMode} />
+                                <ChartSkeleton darkMode={darkMode} />
+                                <div style={{ marginTop: 20, padding: 16, background: darkMode ? '#1e1e1e' : '#fff', borderRadius: '8px' }}>
+                                    <h4 style={{ margin: '0 0 10px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>📈 Predictions</h4>
+                                    <ListSkeleton darkMode={darkMode} count={3} />
+                                </div>
+                            </div>
+                        ) : !loading && filteredHistory.length > 0 && (
+                            <div>
+                                {/* Technical Info Panel */}
+                                <div style={{ 
+                                    marginBottom: 20, 
+                                    padding: 16, 
+                                    border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, 
+                                    borderRadius: '8px', 
+                                    background: darkMode ? '#1e1e1e' : '#fff' 
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15 }}>
+                                        {/* Logo Section */}
+                                        {getStockLogo(ticker) ? (
+                                            <img 
+                                                src={getStockLogo(ticker)} 
+                                                alt={`${ticker} Logo`} 
+                                                style={{ width: 48, height: 48, marginRight: 16, borderRadius: '4px', border: '1px solid #eee' }} 
+                                                onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'block'; }} 
+                                            />
+                                        ) : (
+                                            <div style={{ width: 48, height: 48, marginRight: 16, borderRadius: '4px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', background: darkMode ? '#333' : '#f0f0f0', color: darkMode ? '#999' : '#666', fontSize: '18px', fontWeight: 'bold' }}>
+                                                {ticker.slice(0, 2)}
+                                            </div>
+                                        )}
+                                        
+                                        <div>
+                                            {/* Company Name */}
+                                            <h3 style={{ margin: 0, fontWeight: 'bold' }}>
+                                                {(function() {
+                                                    switch(ticker) {
+                                                        case 'MSFT': return 'Microsoft Corp.';
+                                                        case 'AAPL': return 'Apple Inc.'; 
+                                                        case 'T': return 'AT&T Inc.';
+                                                        case 'IBM': return 'IBM';
+                                                        default: return overview?.name || ticker;
+                                                    }
+                                                })()}
+                                            </h3>
+                                            <div style={{ fontSize: '14px', color: darkMode ? '#bbb' : '#666' }}>{ticker} Stock Quote</div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        borderTop: `1px solid ${darkMode ? '#333' : '#eee'}`, 
+                                        paddingTop: 10 
+                                    }}>
+                                        {/* Last Close Price */}
+                                        <div style={{ flex: 1, textAlign: 'center', borderRight: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '20px', color: '#2196f3' }}>
+                                                ${parseFloat(technicalInfo.last_close).toFixed(2)}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST CLOSE</div>
+                                        </div>
+                                        
+                                        {/* Last Open Price */}
+                                        <div style={{ flex: 1, textAlign: 'center', borderRight: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                                                ${parseFloat(technicalInfo.last_open).toFixed(2)}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST OPEN</div>
+                                        </div>
+                                        
+                                        {/* Last Volume */}
+                                        <div style={{ flex: 1, textAlign: 'center' }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                                                {parseInt(technicalInfo.last_volume).toLocaleString()}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST VOLUME</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* END: Technical Info Panel */}
+
+                                
+
+                                <div style={{ height: 500 }}>
+                                    {chartData ? <Line data={chartData} options={chartOptions} /> : <div>No chart data</div>}
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', marginTop: '12px' }}>
+                                    {periods.map((p) => {
+                                        const isActive = range === p.value;
+                                        const pct = periodChanges[p.value];
+                                        const pctText = pct !== undefined ? `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
+
+                                        return (
+                                            <div key={p.value} onClick={() => setRange(p.value)} style={{ flex: 1, padding: '10px', borderRadius: '6px', textAlign: 'center', cursor: 'pointer', backgroundColor: isActive ? (darkMode ? '#333' : '#e3f2fd') : (darkMode ? '#1e1e1e' : '#fff'), border: isActive ? '2px solid #2196f3' : '1px solid rgba(0,0,0,0.1)' }}>
+                                                <div style={{ fontWeight: 'bold' }}>{p.label}</div>
+                                                <div style={{ fontSize: '12px', color: pct > 0 ? '#059669' : pct < 0 ? '#dc2626' : darkMode ? '#aaa' : '#666' }}>{pctText}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+
+                                <div style={{ marginTop: 20, padding: 16, border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff' }}>
+                                    <h4 style={{ margin: '0 0 10px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                                        📈 Predictions
+                                    </h4>
+                                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '14px' }}>
+                                        {predictions.map((p, idx) => (
+                                            <li 
+                                                key={idx} 
+                                                style={{ 
+                                                    display: 'flex', 
+                                                    justifyContent: 'space-between', 
+                                                    padding: '8px 0', 
+                                                    borderBottom: idx < predictions.length - 1 ? `1px dotted ${darkMode ? '#333' : '#eee'}` : 'none' 
+                                                }}
+                                            >
+                                                <span style={{ color: darkMode ? '#bbb' : '#444' }}>
+                                                    {p.date}
+                                                </span>
+                                                <strong style={{ color: '#059669' }}>
+                                                    ${p.predicted_close.toFixed(2)}
+                                                </strong>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {predictions.length === 0 && (
+                                        <div style={{ textAlign: 'center', padding: '10px 0', color: darkMode ? '#aaa' : '#666', fontSize: '13px' }}>
+                                            No upcoming predictions.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        {!loading && filteredHistory.length === 0 && !error && (
+                            <div style={{ textAlign: 'center', padding: '40px', color: darkMode ? '#aaa' : '#666' }}>
+                                No historical data available for {ticker}.
+                            </div>
+                        )}
+                    </>
+                )}
+                
+                {/* ------------------- Risk Calculator Tab ------------------- */}
+                {activeTab === 'risk' && (
+                    <div style={{ padding: '20px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
+                        <h3 style={{ margin: '0 0 15px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                            Risk Calculator: Net Profit Forecast (Next 5 Days)
+                        </h3>
+
+                        {(feesLoading || loading) ? (
+                            <div style={{ textAlign: 'center', padding: '40px' }}>
+                                <LoadingSpinner size={32} />
+                                <p style={{ marginTop: '10px', color: darkMode ? '#aaa' : '#666' }}>
+                                    Loading user fees and stock predictions...
+                                </p>
+                            </div>
+                        ) : (
+                            <div style={{ marginBottom: '20px', borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingBottom: '15px' }}>
+                                <div style={{ marginBottom: '15px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                    <label style={{ fontWeight: 'bold' }}>
+                                        Investment Amount (USD):
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="100"
+                                        value={investmentAmount}
+                                        onChange={(e) => setInvestmentAmount(parseFloat(e.target.value) || 0)}
+                                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', width: '150px' }}
+                                    />
+                                </div>
+
+                                <p style={{ fontSize: '13px', color: darkMode ? '#aaa' : '#666' }}>
+                                    **Your Fees (from Settings)**: Fee Per Share: ${userFees.feePerShare.toFixed(4)}, Minimum Fee: ${userFees.feeMinimum.toFixed(2)}
+                                </p>
+                                <p style={{ fontSize: '13px', color: '#dc2626' }}>
+                                    **Tax Rate Applied**: 25% on gross profit.
+                                </p>
+                                
+                                {riskCalculation?.currentPrice && (
+                                    <p style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '10px' }}>
+                                        **Purchase Price**: ${riskCalculation.currentPrice.toFixed(2)} | **Shares Purchased**: {riskCalculation.sharesToBuy}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+
+                        {riskCalculation?.error && (
+                            <div style={{ color: '#dc2626', fontWeight: 'bold', padding: '10px', border: '1px solid #dc2626', borderRadius: '4px' }}>
+                                {riskCalculation.error}
+                            </div>
+                        )}
+                        
+                        {riskCalculation && riskCalculation.results?.length > 0 && (
+                            <div style={{ marginTop: '20px' }}>
+                                <h4 style={{ color: darkMode ? '#f1f1f1' : '#111', borderBottom: `1px dotted ${darkMode ? '#333' : '#eee'}`, paddingBottom: '10px' }}>
+                                    📅 Daily Net Profit Forecast (Next 5 Days)
+                                </h4>
+                                
+                                {riskCalculation.maxProfitResult && (
+                                    <div style={{ 
+                                        padding: '10px', 
+                                        marginBottom: '15px', 
+                                        background: riskCalculation.maxProfitResult.netProfit > 0 ? (darkMode ? '#0f4f3a' : '#dcfce7') : (darkMode ? '#4f0f0f' : '#fee2e2'), 
+                                        borderRadius: '6px',
+                                        fontWeight: 'bold',
+                                        textAlign: 'center'
+                                    }}>
+                                        Optimal Sale Day: **{riskCalculation.maxProfitResult.date}** with Net Profit: 
+                                        <span style={{ color: riskCalculation.maxProfitResult.netProfit >= 0 ? '#059669' : '#dc2626', marginLeft: '5px' }}>
+                                            ${riskCalculation.maxProfitResult.netProfit.toFixed(2)}
+                                        </span>
+                                    </div>
+                                )}
+
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: `2px solid ${darkMode ? '#444' : '#ccc'}`, textAlign: 'left' }}>
+                                            <th style={{ padding: '8px 4px' }}>Date</th>
+                                            <th style={{ padding: '8px 4px' }}>Predicted Close</th>
+                                            <th style={{ padding: '8px 4px', textAlign: 'right' }}>Gross Profit</th>
+                                            <th style={{ padding: '8px 4px', textAlign: 'right' }}>Fees + Tax</th>
+                                            <th style={{ padding: '8px 4px', textAlign: 'right' }}>Net Profit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {riskCalculation.results.map((r, index) => (
+                                            <tr 
+                                                key={index} 
+                                                style={{ 
+                                                    borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`,
+                                                    background: r.netProfit === riskCalculation.maxProfitResult.netProfit ? (darkMode ? '#3b3b00' : '#fffbe7') : 'transparent'
+                                                }}
+                                            >
+                                                <td style={{ padding: '8px 4px', fontWeight: 'bold' }}>{r.date}</td>
+                                                <td style={{ padding: '8px 4px' }}>${r.predictedClose.toFixed(2)}</td>
+                                                <td style={{ padding: '8px 4px', textAlign: 'right', color: r.grossProfitTotal >= 0 ? '#059669' : '#dc2626' }}>${r.grossProfitTotal.toFixed(2)}</td>
+                                                <td style={{ padding: '8px 4px', textAlign: 'right' }}>${(r.totalFees + r.taxAmount).toFixed(2)}</td>
+                                                <td style={{ padding: '8px 4px', textAlign: 'right', fontWeight: 'bold', color: r.netProfit >= 0 ? '#059669' : '#dc2626' }}>
+                                                    ${r.netProfit.toFixed(2)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+
+                {/* ------------------- News Tab ------------------- */}
+                {activeTab === 'news' && (
+                    <div>
+                        {newsLoading && <ListSkeleton darkMode={darkMode} count={5} />}
+                        {!newsLoading && news.length === 0 && <div>No news available.</div>}
+                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                            {news.map((article, idx) => (
+                                <li key={idx} style={{ padding: '10px', borderBottom: `1px solid ${darkMode ? '#333' : '#ddd'}`, marginBottom: '8px' }}>
+                                    <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? '#90caf9' : '#1a0dab', fontWeight: 'bold', textDecoration: 'none' }}>
+                                        {article.headline}
+                                    </a>
+                                    <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{article.source} — {article.date}</div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                {/* ------------------- Overview Tab ------------------- */}
+                {activeTab === 'overview' && (
+                    <div>
+                        {overviewLoading && <OverviewSkeleton darkMode={darkMode} />}
+                        {!overviewLoading && !overview && <div>No overview available.</div>}
+                        {overview && (
                             <div style={{ 
-                                marginBottom: 20, 
-                                padding: 16, 
+                                padding: 20, 
                                 border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, 
                                 borderRadius: '8px', 
                                 background: darkMode ? '#1e1e1e' : '#fff' 
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15 }}>
-                                    {/* Logo Section */}
-                                    {getStockLogo(ticker) ? (
-                                        <img 
-                                            src={getStockLogo(ticker)} 
-                                            alt={`${ticker} Logo`} 
-                                            style={{ width: 48, height: 48, marginRight: 16, borderRadius: '4px', border: '1px solid #eee' }} 
-                                            onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'block'; }} 
-                                        />
-                                    ) : (
-                                        <div style={{ width: 48, height: 48, marginRight: 16, borderRadius: '4px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', background: darkMode ? '#333' : '#f0f0f0', color: darkMode ? '#999' : '#666', fontSize: '18px', fontWeight: 'bold' }}>
-                                            {ticker.slice(0, 2)}
-                                        </div>
-                                    )}
+                                <h3 style={{ margin: '0 0 15px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                                    Company Overview
+                                </h3>
+                                
+                                {/* Header: Name and Ticker */}
+                                <div style={{ marginBottom: 15, borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingBottom: 10 }}>
+                                    <h4 style={{ margin: 0, fontWeight: 'bold' }}>
+                                        {overview.name} ({overview.symbol})
+                                    </h4>
+                                </div>
+
+                                {/* Description */}
+                                <p style={{ lineHeight: '1.6', fontSize: '14px', color: darkMode ? '#ccc' : '#444' }}>
+                                    {overview.description}
+                                </p>
+
+                                {/* Key Financial and Sector Info */}
+                                <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', fontSize: '14px' }}>
                                     
                                     <div>
-                                        {/* Company Name */}
-                                        <h3 style={{ margin: 0, fontWeight: 'bold' }}>
-                                            {(function() {
-                                                switch(ticker) {
-                                                    case 'MSFT': return 'Microsoft Corp.';
-                                                    case 'AAPL': return 'Apple Inc.'; 
-                                                    case 'T': return 'AT&T Inc.';
-                                                    case 'IBM': return 'IBM';
-                                                    default: return overview?.name || ticker;
-                                                }
-                                            })()}
-                                        </h3>
-                                        <div style={{ fontSize: '14px', color: darkMode ? '#bbb' : '#666' }}>{ticker} Stock Quote</div>
-                                    </div>
-                                </div>
-
-                                <div style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
-                                    borderTop: `1px solid ${darkMode ? '#333' : '#eee'}`, 
-                                    paddingTop: 10 
-                                }}>
-                                    {/* Last Close Price */}
-                                    <div style={{ flex: 1, textAlign: 'center', borderRight: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
-                                        <div style={{ fontWeight: 'bold', fontSize: '20px', color: '#2196f3' }}>
-                                            ${parseFloat(technicalInfo.last_close).toFixed(2)}
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST CLOSE</div>
+                                        <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Sector:</strong> {overview.sector}
                                     </div>
                                     
-                                    {/* Last Open Price */}
-                                    <div style={{ flex: 1, textAlign: 'center', borderRight: `1px solid ${darkMode ? '#333' : '#eee'}` }}>
-                                        <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
-                                            ${parseFloat(technicalInfo.last_open).toFixed(2)}
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST OPEN</div>
+                                    <div>
+                                        <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Industry:</strong> {overview.industry}
+                                    </div>
+
+                                    <div>
+                                        <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Market Cap:</strong> {overview.marketCap}
                                     </div>
                                     
-                                    {/* Last Volume */}
-                                    <div style={{ flex: 1, textAlign: 'center' }}>
-                                        <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
-                                            {parseInt(technicalInfo.last_volume).toLocaleString()}
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>LAST VOLUME</div>
-                                    </div>
-                                </div>
-                            </div>
-                            {/* END: NEW STYLED TECHNICAL INFO PANEL */}
-
-                            
-
-                            <div style={{ height: 500 }}>
-                                {chartData ? <Line data={chartData} options={chartOptions} /> : <div>No chart data</div>}
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                                {periods.map((p) => {
-                                    const isActive = range === p.value;
-                                    const pct = periodChanges[p.value];
-                                    const pctText = pct !== undefined ? `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%` : '';
-
-                                    return (
-                                        <div key={p.value} onClick={() => setRange(p.value)} style={{ flex: 1, padding: '10px', borderRadius: '6px', textAlign: 'center', cursor: 'pointer', backgroundColor: isActive ? (darkMode ? '#333' : '#e3f2fd') : (darkMode ? '#1e1e1e' : '#fff'), border: isActive ? '2px solid #2196f3' : '1px solid rgba(0,0,0,0.1)' }}>
-                                            <div style={{ fontWeight: 'bold' }}>{p.label}</div>
-                                            <div style={{ fontSize: '12px', color: pct > 0 ? '#059669' : pct < 0 ? '#dc2626' : darkMode ? '#aaa' : '#666' }}>{pctText}</div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-
-                            <div style={{ marginTop: 20, padding: 16, border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff' }}>
-                                <h4 style={{ margin: '0 0 10px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
-                                    📈 Predictions
-                                </h4>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '14px' }}>
-                                    {predictions.map((p, idx) => (
-                                        <li 
-                                            key={idx} 
-                                            style={{ 
-                                                display: 'flex', 
-                                                justifyContent: 'space-between', 
-                                                padding: '8px 0', 
-                                                borderBottom: idx < predictions.length - 1 ? `1px dotted ${darkMode ? '#333' : '#eee'}` : 'none' 
-                                            }}
+                                    <div>
+                                        <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Website:</strong> 
+                                        <a 
+                                            href={overview.website} 
+                                            target="_blank" 
+                                            rel="noreferrer" 
+                                            style={{ color: darkMode ? '#90caf9' : '#2196f3', textDecoration: 'none' }}
                                         >
-                                            <span style={{ color: darkMode ? '#bbb' : '#444' }}>
-                                                {p.date}
-                                            </span>
-                                            <strong style={{ color: '#059669' }}>
-                                                ${p.predicted_close.toFixed(2)}
-                                            </strong>
-                                        </li>
-                                    ))}
-                                </ul>
-                                {predictions.length === 0 && (
-                                    <div style={{ textAlign: 'center', padding: '10px 0', color: darkMode ? '#aaa' : '#666', fontSize: '13px' }}>
-                                        No upcoming predictions.
+                                            Link
+                                        </a>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                    {loading && <div>Loading…</div>}
-                </>
-            )}
-            
-            {/* --- Risk Calculator Tab Content (MODIFIED) --- */}
-            {activeTab === 'risk' && (
-                <div style={{ padding: '20px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
-                    <h3 style={{ margin: '0 0 15px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
-                        Risk Calculator: Net Profit Forecast (Next 5 Days)
-                    </h3>
-
-                    {(feesLoading || loading) ? (
-                        <p>Loading user data and stock info...</p>
-                    ) : (
-                        <div style={{ marginBottom: '20px', borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingBottom: '15px' }}>
-                            <div style={{ marginBottom: '15px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                <label style={{ fontWeight: 'bold' }}>
-                                    Investment Amount (USD):
-                                </label>
-                                <input
-                                    type="number"
-                                    step="100"
-                                    value={investmentAmount}
-                                    onChange={(e) => setInvestmentAmount(parseFloat(e.target.value) || 0)}
-                                    style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', width: '150px' }}
-                                />
-                            </div>
-
-                            <p style={{ fontSize: '13px', color: darkMode ? '#aaa' : '#666' }}>
-                                **Your Fees (from Settings)**: Fee Per Share: ${userFees.feePerShare.toFixed(4)}, Minimum Fee: ${userFees.feeMinimum.toFixed(2)}
-                            </p>
-                            <p style={{ fontSize: '13px', color: '#dc2626' }}>
-                                **Tax Rate Applied**: 25% on gross profit.
-                            </p>
-                            
-                            {riskCalculation?.currentPrice && (
-                                <p style={{ fontSize: '13px', fontWeight: 'bold', marginTop: '10px' }}>
-                                    **Purchase Price**: ${riskCalculation.currentPrice.toFixed(2)} | **Shares Purchased**: {riskCalculation.sharesToBuy}
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-
-                    {riskCalculation?.error && (
-                         <div style={{ color: '#dc2626', fontWeight: 'bold', padding: '10px', border: '1px solid #dc2626', borderRadius: '4px' }}>
-                            {riskCalculation.error}
-                        </div>
-                    )}
-                    
-                    {riskCalculation && riskCalculation.results?.length > 0 && (
-                        <div style={{ marginTop: '20px' }}>
-                            <h4 style={{ color: darkMode ? '#f1f1f1' : '#111', borderBottom: `1px dotted ${darkMode ? '#333' : '#eee'}`, paddingBottom: '10px' }}>
-                                📅 Daily Net Profit Forecast (Next 5 Days)
-                            </h4>
-                            
-                            {riskCalculation.maxProfitResult && (
-                                <div style={{ 
-                                    padding: '10px', 
-                                    marginBottom: '15px', 
-                                    background: riskCalculation.maxProfitResult.netProfit > 0 ? (darkMode ? '#0f4f3a' : '#dcfce7') : (darkMode ? '#4f0f0f' : '#fee2e2'), 
-                                    borderRadius: '6px',
-                                    fontWeight: 'bold',
-                                    textAlign: 'center'
-                                }}>
-                                    Optimal Sale Day: **{riskCalculation.maxProfitResult.date}** with Net Profit: 
-                                    <span style={{ color: riskCalculation.maxProfitResult.netProfit >= 0 ? '#059669' : '#dc2626', marginLeft: '5px' }}>
-                                        ${riskCalculation.maxProfitResult.netProfit.toFixed(2)}
-                                    </span>
-                                </div>
-                            )}
-
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: `2px solid ${darkMode ? '#444' : '#ccc'}`, textAlign: 'left' }}>
-                                        <th style={{ padding: '8px 4px' }}>Date</th>
-                                        <th style={{ padding: '8px 4px' }}>Predicted Close</th>
-                                        <th style={{ padding: '8px 4px', textAlign: 'right' }}>Gross Profit</th>
-                                        <th style={{ padding: '8px 4px', textAlign: 'right' }}>Fees + Tax</th>
-                                        <th style={{ padding: '8px 4px', textAlign: 'right' }}>Net Profit</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {riskCalculation.results.map((r, index) => (
-                                        <tr 
-                                            key={index} 
-                                            style={{ 
-                                                borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`,
-                                                background: r.netProfit === riskCalculation.maxProfitResult.netProfit ? (darkMode ? '#3b3b00' : '#fffbe7') : 'transparent'
-                                            }}
-                                        >
-                                            <td style={{ padding: '8px 4px', fontWeight: 'bold' }}>{r.date}</td>
-                                            <td style={{ padding: '8px 4px' }}>${r.predictedClose.toFixed(2)}</td>
-                                            <td style={{ padding: '8px 4px', textAlign: 'right', color: r.grossProfitTotal >= 0 ? '#059669' : '#dc2626' }}>${r.grossProfitTotal.toFixed(2)}</td>
-                                            <td style={{ padding: '8px 4px', textAlign: 'right' }}>${(r.totalFees + r.taxAmount).toFixed(2)}</td>
-                                            <td style={{ padding: '8px 4px', textAlign: 'right', fontWeight: 'bold', color: r.netProfit >= 0 ? '#059669' : '#dc2626' }}>
-                                                ${r.netProfit.toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            )}
-            {/* --- END Risk Calculator Tab Content --- */}
-
-
-            {activeTab === 'news' && (
-                <div>
-                    {newsLoading && <div>Loading news…</div>}
-                    {!newsLoading && news.length === 0 && <div>No news available.</div>}
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {news.map((article, idx) => (
-                            <li key={idx} style={{ padding: '10px', borderBottom: '1px solid #ddd', marginBottom: '8px' }}>
-                                <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? '#90caf9' : '#1a0dab', fontWeight: 'bold', textDecoration: 'none' }}>
-                                    {article.headline}
-                                </a>
-                                <div style={{ fontSize: '12px', color: '#666' }}>{article.source} — {article.date}</div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-
-            {activeTab === 'overview' && (
-                <div>
-                    {overviewLoading && <div>Loading overview…</div>}
-                    {!overviewLoading && !overview && <div>No overview available.</div>}
-                    {overview && (
-                        <div style={{ 
-                            padding: 20, 
-                            border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, 
-                            borderRadius: '8px', 
-                            background: darkMode ? '#1e1e1e' : '#fff' 
-                        }}>
-                            <h3 style={{ margin: '0 0 15px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
-                                Company Overview
-                            </h3>
-                            
-                            {/* Header: Name and Ticker */}
-                            <div style={{ marginBottom: 15, borderBottom: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingBottom: 10 }}>
-                                <h4 style={{ margin: 0, fontWeight: 'bold' }}>
-                                    {overview.name} ({overview.symbol})
-                                </h4>
-                            </div>
-
-                            {/* Description */}
-                            <p style={{ lineHeight: '1.6', fontSize: '14px', color: darkMode ? '#ccc' : '#444' }}>
-                                {overview.description}
-                            </p>
-
-                            {/* Key Financial and Sector Info */}
-                            <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', fontSize: '14px' }}>
-                                
-                                <div>
-                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Sector:</strong> {overview.sector}
-                                </div>
-                                
-                                <div>
-                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Industry:</strong> {overview.industry}
-                                </div>
-
-                                <div>
-                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Market Cap:</strong> {overview.marketCap}
-                                </div>
-                                
-                                <div>
-                                    <strong style={{ color: darkMode ? '#bbb' : '#333' }}>Website:</strong> 
-                                    <a 
-                                        href={overview.website} 
-                                        target="_blank" 
-                                        rel="noreferrer" 
-                                        style={{ color: darkMode ? '#90caf9' : '#2196f3', textDecoration: 'none' }}
-                                    >
-                                        Link
-                                    </a>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* HypeMeter Tab Content */}
-            {activeTab === 'hype' && (
-                <div>
-                    <h3 style={{ marginBottom: '16px' }}>HypeMeter for {ticker}</h3>
-
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                        {hypeTimeframes.map((tf) => (
-                            <button key={tf.value} onClick={() => setHypeTimeframe(tf.value)} style={{ padding: '6px 12px', borderRadius: '6px', border: hypeTimeframe === tf.value ? '2px solid #2196f3' : '1px solid #ccc', background: hypeTimeframe === tf.value ? '#2196f3' : 'transparent', color: hypeTimeframe === tf.value ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
-                                {tf.label}
-                            </button>
-                        ))}
+                        )}
                     </div>
+                )}
 
-                    {hypeLoading && <div>Loading hype data...</div>}
-                    {!hypeLoading && !hypeData && <div>Failed to load hype data.</div>}
-
-                    {hypeData && (
-                        <>
-                            
-
-                            <div style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
-                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: hypeData.hypeLevel.color }}>
-                                        {hypeData.hypeLevel.label}
-                                    </div>
-                                    <div style={{ fontSize: '48px', fontWeight: 'extrabold', color: hypeData.hypeLevel.color, margin: '10px 0' }}>
-                                        {hypeData.hypeScore}%
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>
-                                        Hype Score for the {hypeData.timeframe} (Reddit)
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{hypeData.mentions}</div>
-                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Mentions</div>
-                                    </div>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#059669' }}>{hypeData.sentiment.positive.toFixed(1)}%</div>
-                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Positive</div>
-                                    </div>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc2626' }}>{hypeData.sentiment.negative.toFixed(1)}%</div>
-                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Negative</div>
-                                    </div>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{hypeData.sentiment.averageScore.toFixed(2)}</div>
-                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Avg. Sentiment</div>
-                                    </div>
-                                </div>
-
-                                <h4 style={{ borderTop: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, paddingTop: '16px', marginBottom: '10px' }}>Top Posts</h4>
-                                <ul style={{ listStyle: 'none', padding: 0 }}>
-                                    {hypeData.topPosts.map((post, idx) => (
-                                        <li key={idx} style={{ marginBottom: '10px', borderBottom: `1px dotted ${darkMode ? '#222' : '#f0f0f0'}`, paddingBottom: '8px' }}>
-                                            <a href={post.url} target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? '#90caf9' : '#1a0dab', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
-                                                {post.title}
-                                            </a>
-                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666', marginTop: '4px' }}>
-                                                <span style={{ color: post.sentiment === 'positive' ? '#059669' : post.sentiment === 'negative' ? '#dc2626' : '#ffaa00', fontWeight: 'bold' }}>
-                                                    {post.sentiment.toUpperCase()}
-                                                </span>
-                                                {' | '}
-                                                r/{post.subreddit}
-                                                {' | '}
-                                                Score: {post.score}
-                                                {' | '}
-                                                Comments: {post.numComments}
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <div style={{ fontSize: '10px', color: darkMode ? '#555' : '#999', marginTop: '16px', textAlign: 'right' }}>
-                                    Data last updated: {new Date(hypeData.lastUpdated).toLocaleString()}
-                                </div>
-                            </div>
-
-                            <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', background: darkMode ? '#282828' : '#e0f7fa', border: `1px solid ${darkMode ? '#444' : '#b2ebf2'}` }}>
-                                <h4 style={{ margin: '0 0 10px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
-                                    💡 How the Hype Score is Calculated
-                                </h4>
-                                <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '1.4', color: darkMode ? '#ccc' : '#444' }}>
-                                    The **Hype Score** (0-100%) is calculated by aggregating data from top finance subreddits ({hypeData.timeframe} timeframe) based on four weighted factors:
-                                </p>
-                                <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '13px', color: darkMode ? '#ccc' : '#444' }}>
-                                    <li>**Mention Score (Max 30%):** Based on the sheer volume of posts mentioning the ticker.</li>
-                                    <li>**Sentiment Score (Max 40%):** Calculated from the net positive vs. negative sentiment of all analyzed posts.</li>
-                                    <li>**Engagement Score (Max 20%):** Measures the average upvotes and comments on the top posts, indicating user interaction.</li>
-                                    <li>**Trend Score (Max 10%):** Weighs posts from the last 6 hours more heavily to capture recent activity.</li>
-                                </ul>
-                                {/* START: Added Sentiment Score Explanation */}
-                                <h5 style={{ margin: '15px 0 5px 0', color: darkMode ? '#90caf9' : '#0097a7', fontSize: '13px' }}>
-                                    Details: Individual Post Sentiment Score
-                                </h5>
-                                <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '12px', color: darkMode ? '#bbb' : '#555' }}>
-                                    <li>**Lexicon:** Sentiment is determined using the AFINN-165 wordlist (over 3,300 emotional words).</li>
-                                    <li>**Word Scoring:** Each recognized word is assigned a fixed score from -5 (negative) to +5 (positive).</li>
-                                    <li>**Calculation:** The post's total `sentimentScore` is the sum of all scores of the emotional words found in its title and body.</li>
-                                </ul>
-                                {/* END: Added Sentiment Score Explanation */}
-                            </div>
-                        </>
-                    )}
-                </div>
-            )}
-
-            {/* Existing Discussion Tab Content */}
-            {activeTab === 'discussion' && (
-                <div>
-                    <h3 style={{ marginBottom: '16px' }}>Discussion for {ticker}</h3>
-
-                    <div style={{ marginBottom: '24px' }}>
-                        <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Share your thoughts about this stock..." maxLength={1000} style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: `1px solid ${darkMode ? '#444' : '#ccc'}`, background: darkMode ? '#1e1e1e' : '#fff', color: darkMode ? '#f1f1f1' : '#111', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }} />
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                            <span style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{newComment.length}/1000</span>
-                            <button onClick={handleSubmitComment} disabled={submitting || !newComment.trim()} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: submitting || !newComment.trim() ? '#ccc' : '#2196f3', color: '#fff', cursor: submitting || !newComment.trim() ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-                                {submitting ? 'Posting...' : 'Post Comment'}
-                            </button>
-                        </div>
-                        {commentError && <div style={{ color: '#dc2626', marginTop: '8px', fontSize: '14px' }}>{commentError}</div>}
-                    </div>
-
-                    {commentsLoading && <div>Loading comments…</div>}
-                    {!commentsLoading && comments.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '40px', color: darkMode ? '#aaa' : '#666' }}>
-                            No comments yet. Be the first to share your thoughts!
-                        </div>
-                    )}
+                {/* ------------------- HypeMeter Tab ------------------- */}
+                {activeTab === 'hype' && (
                     <div>
-                        {comments.map((comment) => (
-                            <div key={comment._id} style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, marginBottom: '12px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
-                                    <div>
-                                        <strong style={{ color: darkMode ? '#90caf9' : '#2196f3' }}>{comment.firstName}</strong>
-                                        <span style={{ marginLeft: '8px', fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{formatDate(comment.createdAt)}</span>
+                        <h3 style={{ marginBottom: '16px' }}>HypeMeter for {ticker}</h3>
+
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                            {hypeTimeframes.map((tf) => (
+                                <button key={tf.value} onClick={() => setHypeTimeframe(tf.value)} style={{ padding: '6px 12px', borderRadius: '6px', border: hypeTimeframe === tf.value ? '2px solid #2196f3' : '1px solid #ccc', background: hypeTimeframe === tf.value ? '#2196f3' : 'transparent', color: hypeTimeframe === tf.value ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
+                                    {tf.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {hypeLoading && <HypeMeterSkeleton darkMode={darkMode} />}
+                        {!hypeLoading && !hypeData && <div>Failed to load hype data.</div>}
+
+                        {hypeData && (
+                            <>
+                                <div style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
+                                    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: hypeData.hypeLevel.color }}>
+                                            {hypeData.hypeLevel.label}
+                                        </div>
+                                        <div style={{ fontSize: '48px', fontWeight: 'extrabold', color: hypeData.hypeLevel.color, margin: '10px 0' }}>
+                                            {hypeData.hypeScore}%
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>
+                                            Hype Score for the {hypeData.timeframe} (Reddit)
+                                        </div>
                                     </div>
-                                    {currentUserId === comment.userId && (
-                                        <button onClick={() => handleDeleteComment(comment._id)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer' }}>
-                                            Delete
-                                        </button>
-                                    )}
+
+                                    <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{hypeData.mentions}</div>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Mentions</div>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#059669' }}>{hypeData.sentiment.positive.toFixed(1)}%</div>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Positive</div>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc2626' }}>{hypeData.sentiment.negative.toFixed(1)}%</div>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Negative</div>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{hypeData.sentiment.averageScore.toFixed(2)}</div>
+                                            <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>Avg. Sentiment</div>
+                                        </div>
+                                    </div>
+
+                                    <h4 style={{ borderTop: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, paddingTop: '16px', marginBottom: '10px' }}>Top Posts</h4>
+                                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                                        {hypeData.topPosts.map((post, idx) => (
+                                            <li key={idx} style={{ marginBottom: '10px', borderBottom: `1px dotted ${darkMode ? '#222' : '#f0f0f0'}`, paddingBottom: '8px' }}>
+                                                <a href={post.url} target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? '#90caf9' : '#1a0dab', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+                                                    {post.title}
+                                                </a>
+                                                <div style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666', marginTop: '4px' }}>
+                                                    <span style={{ color: post.sentiment === 'positive' ? '#059669' : post.sentiment === 'negative' ? '#dc2626' : '#ffaa00', fontWeight: 'bold' }}>
+                                                        {post.sentiment.toUpperCase()}
+                                                    </span>
+                                                    {' | '}
+                                                    r/{post.subreddit}
+                                                    {' | '}
+                                                    Score: {post.score}
+                                                    {' | '}
+                                                    Comments: {post.numComments}
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+
+                                    <div style={{ fontSize: '10px', color: darkMode ? '#555' : '#999', marginTop: '16px', textAlign: 'right' }}>
+                                        Data last updated: {new Date(hypeData.lastUpdated).toLocaleString()}
+                                    </div>
                                 </div>
-                                <p style={{ margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{comment.content}</p>
-                            </div>
-                        ))}
+
+                                <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', background: darkMode ? '#282828' : '#e0f7fa', border: `1px solid ${darkMode ? '#444' : '#b2ebf2'}`, marginTop: '16px' }}>
+                                    <h4 style={{ margin: '0 0 10px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
+                                        💡 How the Hype Score is Calculated
+                                    </h4>
+                                    <p style={{ margin: '0 0 10px 0', fontSize: '13px', lineHeight: '1.4', color: darkMode ? '#ccc' : '#444' }}>
+                                        The Hype Score (0-100%) is calculated by aggregating data from top finance subreddits ({hypeData.timeframe} timeframe) based on four weighted factors:
+                                    </p>
+                                    <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '13px', color: darkMode ? '#ccc' : '#444' }}>
+                                        <li>Mention Score (Max 30%): Based on the sheer volume of posts mentioning the ticker.</li>
+                                        <li>Sentiment Score (Max 40%): Calculated from the net positive vs. negative sentiment of all analyzed posts.</li>
+                                        <li>Engagement Score (Max 20%): Measures the average upvotes and comments on the top posts, indicating user interaction.</li>
+                                        <li>Trend Score (Max 10%): Weighs posts from the last 6 hours more heavily to capture recent activity.</li>
+                                    </ul>
+                                    {/* START: Added Sentiment Score Explanation */}
+                                    <h5 style={{ margin: '15px 0 5px 0', color: darkMode ? '#90caf9' : '#0097a7', fontSize: '13px' }}>
+                                        Details: Individual Post Sentiment Score
+                                    </h5>
+                                    <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '12px', color: darkMode ? '#bbb' : '#555' }}>
+                                        <li>Lexicon: Sentiment is determined using the AFINN-165 wordlist (over 3,300 emotional words).</li>
+                                        <li>Word Scoring: Each recognized word is assigned a fixed score from -5 (negative) to +5 (positive).</li>
+                                        <li>Calculation: The post's total `sentimentScore` is the sum of all scores of the emotional words found in its title and body.</li>
+                                    </ul>
+                                    {/* END: Added Sentiment Score Explanation */}
+                                </div>
+                            </>
+                        )}
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+
+                {/* ------------------- Discussion Tab ------------------- */}
+                {activeTab === 'discussion' && (
+                    <div>
+                        <h3 style={{ marginBottom: '16px' }}>Discussion for {ticker}</h3>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Share your thoughts about this stock..." maxLength={1000} style={{ width: '100%', minHeight: '100px', padding: '12px', borderRadius: '8px', border: `1px solid ${darkMode ? '#444' : '#ccc'}`, background: darkMode ? '#1e1e1e' : '#fff', color: darkMode ? '#f1f1f1' : '#111', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                                <span style={{ fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{newComment.length}/1000</span>
+                                <button onClick={handleSubmitComment} disabled={submitting || !newComment.trim()} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: submitting || !newComment.trim() ? '#ccc' : '#2196f3', color: '#fff', cursor: submitting || !newComment.trim() ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                                    {submitting ? 'Posting...' : 'Post Comment'}
+                                </button>
+                            </div>
+                            {commentError && <div style={{ color: '#dc2626', marginTop: '8px', fontSize: '14px' }}>{commentError}</div>}
+                        </div>
+
+                        {commentsLoading && <ListSkeleton darkMode={darkMode} count={3} />}
+                        {!commentsLoading && comments.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '40px', color: darkMode ? '#aaa' : '#666' }}>
+                                No comments yet. Be the first to share your thoughts!
+                            </div>
+                        )}
+                        <div>
+                            {comments.map((comment) => (
+                                <div key={comment._id} style={{ padding: '16px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}`, marginBottom: '12px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                                        <div>
+                                            <strong style={{ color: darkMode ? '#90caf9' : '#2196f3' }}>{comment.firstName}</strong>
+                                            <span style={{ marginLeft: '8px', fontSize: '12px', color: darkMode ? '#aaa' : '#666' }}>{formatDate(comment.createdAt)}</span>
+                                        </div>
+                                        {currentUserId === comment.userId && (
+                                            <button onClick={() => handleDeleteComment(comment._id)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer' }}>
+                                                Delete
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p style={{ margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{comment.content}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     );
 }
