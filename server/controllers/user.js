@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 // --- Register ---
 exports.register = async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, brokerage, customFeePerShare, customFeeMinimum } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) return res.status(409).json({ message: 'Email already exists' });
@@ -30,6 +30,9 @@ exports.register = async (req, res) => {
       password: hashed,
       firstName,
       lastName,
+      brokerage,
+      customFeePerShare, 
+      customFeeMinimum,
       verified: false,
       verificationCode
     });
@@ -129,13 +132,16 @@ exports.profile = async (req, res) => {
 // --- Update Profile (Settings page) ---
 exports.updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, email } = req.body;
+    const { firstName, lastName, email, brokerage, customFeePerShare, customFeeMinimum } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     if (firstName !== undefined) user.firstName = firstName;
     if (lastName !== undefined) user.lastName = lastName;
+    if (brokerage !== undefined) user.brokerage = brokerage;
+    if (customFeePerShare !== undefined) user.customFeePerShare = customFeePerShare;
+    if (customFeeMinimum !== undefined) user.customFeeMinimum = customFeeMinimum;
     if (email !== undefined) {
       const existing = await User.findOne({ email, _id: { $ne: user._id } });
       if (existing) return res.status(409).json({ message: 'Email already exists' });
@@ -143,7 +149,7 @@ exports.updateProfile = async (req, res) => {
     }
 
     await user.save();
-    res.json({ message: 'Profile updated', user: { firstName: user.firstName, lastName: user.lastName, email: user.email } });
+    res.json({ message: 'Profile updated', user: { firstName: user.firstName, lastName: user.lastName, email: user.email, brokerage: user.brokerage, customFeePerShare: user.customFeePerShare, customFeeMinimum: user.customFeeMinimum } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

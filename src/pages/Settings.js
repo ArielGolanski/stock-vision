@@ -10,6 +10,16 @@ const Settings = () => {
     const [profileLoading, setProfileLoading] = useState(false);
     const [profileMessage, setProfileMessage] = useState("");
 
+    // --- NEW STATES for Brokerage and Fees ---
+    const [brokerages, setBrokerages] = useState([]); // List of all available brokerages
+    const [brokerageData, setBrokerageData] = useState({
+        selectedBrokerage: '', 
+        customFeePerShare: 0,
+        customFeeMinimum: 0,
+    });
+    const [feesLoading, setFeesLoading] = useState(true);
+    // ------------------------------------------
+
     const [passwordForm, setPasswordForm] = useState({
         oldPassword: "",
         newPassword: "",
@@ -18,27 +28,58 @@ const Settings = () => {
     const [passwordLoading, setPasswordLoading] = useState(false);
     const [passwordMessage, setPasswordMessage] = useState("");
 
-    // Fetch user profile on mount
+    // Fetch user profile AND brokerages on mount (MODIFIED useEffect)
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+             setFeesLoading(false);
+             return;
+        }
 
-        fetch(`${API_URL}/api/users/profile`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // 1. Fetch ALL Brokerages (used for the dropdown list)
+        fetch(`${API_URL}/api/brokerages`)
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setBrokerages(data);
+                }
+            })
+            .catch(err => console.error("Brokerages list fetch error:", err));
+
+
+        // 2. Fetch User Profile (to get current brokerage and fees)
+        fetch(`${API_URL}/api/users/profile`, { headers })
             .then((res) => res.json())
             .then((data) => {
                 setProfile({
                     firstName: data.firstName || "",
                     lastName: data.lastName || "",
                 });
+                
+                // Set the current fees and brokerage ID from profile data
+                setBrokerageData({
+                    selectedBrokerage: data.brokerage || '',
+                    customFeePerShare: data.customFeePerShare || 0,
+                    customFeeMinimum: data.customFeeMinimum || 0,
+                });
             })
-            .catch((err) => console.error("Profile fetch error:", err));
+            .catch((err) => console.error("Profile fetch error:", err))
+            .finally(() => setFeesLoading(false));
+            
     }, []);
 
-    // --- Profile update ---
+    // --- Profile update handler (MODIFIED to handle fees) ---
     const handleProfileChange = (e) => {
         setProfile({ ...profile, [e.target.name]: e.target.value });
+    };
+
+    const handleBrokerageChange = (e) => {
+        const { name, value } = e.target;
+        // Convert number inputs to float
+        const parsedValue = name.startsWith('customFee') ? parseFloat(value) : value;
+        setBrokerageData(prev => ({ ...prev, [name]: parsedValue }));
     };
 
     const handleProfileSave = async (e) => {
@@ -48,17 +89,26 @@ const Settings = () => {
 
         try {
             const token = localStorage.getItem("token");
+            
+            // Combine profile and brokerage data for the PUT request
+            const updatedBody = {
+                ...profile, 
+                brokerage: brokerageData.selectedBrokerage,
+                customFeePerShare: brokerageData.customFeePerShare,
+                customFeeMinimum: brokerageData.customFeeMinimum,
+            };
+
             const res = await fetch(`${API_URL}/api/users/profile`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(profile),
+                body: JSON.stringify(updatedBody),
             });
 
             if (res.ok) {
-                setProfileMessage("✅ Profile updated successfully");
+                setProfileMessage("✅ Profile and Fees updated successfully");
             } else {
                 const err = await res.json();
                 setProfileMessage(`❌ ${err.message}`);
@@ -113,7 +163,7 @@ const Settings = () => {
                 setPasswordMessage(`❌ ${err.message}`);
             }
         } catch (err) {
-            setPasswordMessage("❌ Server error");
+            setProfileMessage("❌ Server error");
         } finally {
             setPasswordLoading(false);
         }
@@ -144,6 +194,9 @@ const Settings = () => {
         }
     };
 
+    // Find the current brokerage name for display
+    const currentBrokerage = brokerages.find(b => b._id === brokerageData.selectedBrokerage);
+
     return (
         <div
             style={{
@@ -157,7 +210,7 @@ const Settings = () => {
 
             <h2>⚙️ Settings</h2>
 
-            {/* Profile form */}
+            {/* Profile and Brokerage Form (MODIFIED) */}
             <form
                 onSubmit={handleProfileSave}
                 style={{
@@ -171,8 +224,9 @@ const Settings = () => {
                     marginBottom: "30px",
                 }}
             >
-                <h3>👤 Profile</h3>
+                <h3>👤 Profile & Brokerage Details</h3>
 
+                {/* First Name / Last Name */}
                 <label>
                     First Name
                     <input
@@ -183,7 +237,6 @@ const Settings = () => {
                         style={{ width: "100%", padding: "8px" }}
                     />
                 </label>
-
                 <label>
                     Last Name
                     <input
@@ -194,6 +247,62 @@ const Settings = () => {
                         style={{ width: "100%", padding: "8px" }}
                     />
                 </label>
+                
+                {/* Brokerage Selection */}
+                <h4 style={{ margin: '15px 0 5px 0', borderTop: `1px solid ${darkMode ? '#333' : '#eee'}`, paddingTop: '10px' }}>
+                    Brokerage and Fees
+                </h4>
+                {feesLoading ? (
+                    <p>Loading brokerage details...</p>
+                ) : (
+                    <>
+                        <label>
+                            Select Brokerage ({currentBrokerage ? currentBrokerage.name : 'Not set'})
+                            <select
+                                name="selectedBrokerage"
+                                value={brokerageData.selectedBrokerage}
+                                onChange={handleBrokerageChange}
+                                style={{ width: "100%", padding: "8px" }}
+                            >
+                                <option value="">Select a Brokerage</option>
+                                {brokerages.map(b => (
+                                    <option key={b._id} value={b._id}>
+                                        {b.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        
+                        {/* Custom Fee Per Share */}
+                        <label>
+                            Custom Fee Per Share (in usd$)
+                            <input
+                                type="number"
+                                step="0.0001"
+                                name="customFeePerShare"
+                                value={brokerageData.customFeePerShare}
+                                onChange={handleBrokerageChange}
+                                style={{ width: "100%", padding: "8px" }}
+                                required
+                            />
+                        </label>
+
+                        {/* Custom Minimum Fee */}
+                        <label>
+                            Custom Minimum Fee (per command)
+                            <input
+                                type="number"
+                                step="0.01"
+                                name="customFeeMinimum"
+                                value={brokerageData.customFeeMinimum}
+                                onChange={handleBrokerageChange}
+                                style={{ width: "100%", padding: "8px" }}
+                                required
+                            />
+                        </label>
+                    </>
+                )}
+
 
                 <button
                     type="submit"
@@ -208,7 +317,7 @@ const Settings = () => {
                         marginTop: "10px",
                     }}
                 >
-                    {profileLoading ? "Saving..." : "Save Profile"}
+                    {profileLoading ? "Saving..." : "Save Profile & Fees"}
                 </button>
             </form>
 
@@ -224,7 +333,7 @@ const Settings = () => {
                 </p>
             )}
 
-            {/* Password form */}
+            {/* Password form (unchanged) */}
             <form
                 onSubmit={handlePasswordSave}
                 style={{

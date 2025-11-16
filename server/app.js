@@ -43,6 +43,9 @@ app.use('/api/accuracy', accuracyRoutes);
 const chatRoutes = require('./routes/chat');
 app.use('/api/chat', chatRoutes);
 
+const brokerageRoutes = require('./routes/brokerageRoutes');
+app.use('/api/brokerages', brokerageRoutes);
+
 const competitorPredictionsRoutes = require('./routes/competitorPredictions');
 app.use('/api/competitor-predictions', competitorPredictionsRoutes);
 

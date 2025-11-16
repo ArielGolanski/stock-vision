@@ -5,6 +5,12 @@ const userSchema = new mongoose.Schema({
   password: String,
   firstName: String,
   lastName: String,
+  brokerage: { 
+  type: mongoose.Schema.Types.ObjectId, 
+  ref: 'Brokerage' 
+  },
+  customFeePerShare: { type: Number, default: 0.00 },
+  customFeeMinimum: { type: Number, default: 0.00 },
   verified: { type: Boolean, default: false },
   verificationCode: String,
   verificationCodeExpires: Date
