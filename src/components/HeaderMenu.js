@@ -1,4 +1,3 @@
-// client/src/components/HeaderMenu.js
 import React, { useState } from "react";
 import { useTheme } from "./ThemeContext";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +13,12 @@ export default function HeaderMenu() {
         navigate("/login");
     };
 
+    const lightGradient = "linear-gradient(90deg, #e5d88dff 0%, #22C1C3 100%)";
+    const darkGradient = "linear-gradient(90deg, #4ef3aeff 0%, #005010ff 100%)";
+
+    const headerBackground = darkMode ? darkGradient : lightGradient;
+    const headerTextColor = darkMode ? "#f1f1f1" : "#111"; // לבן בכהה, שחור בבהיר
+
     return (
         <header
             style={{
@@ -21,9 +26,9 @@ export default function HeaderMenu() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 padding: "12px 20px",
-                background: darkMode ? "#2e2e2eff" : "#ffffff",
-                color: darkMode ? "#f1f1f1" : "#111",
-                borderBottom: darkMode ? "1px solid #333" : "1px solid #ddd",
+                background: headerBackground, 
+                color: headerTextColor, 
+                borderBottom: darkMode ? "1px solid #333" : "1px solid #ddd", 
                 position: "relative",
             }}
         >
@@ -34,7 +39,8 @@ export default function HeaderMenu() {
                 style={{ height: "40px", cursor: "pointer" }}
                 onClick={() => navigate("/")}
             />
-            <h1 style={{ margin: 0 }}>StockVision</h1>
+            {/* UPDATED FONT SIZE */}
+            <h1 style={{ margin: 0, fontSize: "30px", color: headerTextColor }}>StockVision</h1> 
 
             {/* Hamburger Button */}
             <button
@@ -44,7 +50,7 @@ export default function HeaderMenu() {
                     background: "none",
                     border: "none",
                     cursor: "pointer",
-                    color: darkMode ? "#f1f1f1" : "#111",
+                    color: headerTextColor, // צבע כפתור מותאם
                 }}
             >
                 ☰
@@ -55,7 +61,7 @@ export default function HeaderMenu() {
                 <div
                     style={{
                         position: "absolute",
-                        top: "50px",
+                        top: "65px", 
                         right: "20px",
                         background: darkMode ? "#1e1e1e" : "#fff",
                         color: darkMode ? "#f1f1f1" : "#111",
@@ -93,7 +99,7 @@ export default function HeaderMenu() {
                             cursor: "pointer",
                             color: "inherit",
                         }}
-                        onClick={() => { navigate("/settings") }}
+                        onClick={() => { navigate("/settings"); setMenuOpen(false); }}
                     >
                         ⚙️ Settings
                     </button>
@@ -108,7 +114,7 @@ export default function HeaderMenu() {
                             cursor: "pointer",
                             color: "inherit",
                         }}
-                        onClick={() => { navigate("/accuracy") }}
+                        onClick={() => { navigate("/accuracy"); setMenuOpen(false); }}
                     >
                         📈 Accuracy
                     </button>
@@ -123,7 +129,7 @@ export default function HeaderMenu() {
                             cursor: "pointer",
                             color: "inherit",
                         }}
-                        onClick={() => { navigate("/competitor-predictions") }}
+                        onClick={() => { navigate("/competitor-predictions"); setMenuOpen(false); }}
                     >
                         🏆 Competitors
                     </button>
