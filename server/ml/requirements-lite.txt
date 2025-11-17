@@ -9,8 +9,7 @@ scikit-learn
 joblib
 
 # --- ML Frameworks (CPU-only versions) ---
-tensorflow-cpu  # <--- Different for CPU only
-torch --index-url https://download.pytorch.org/whl/cpu  # For CPU only
+tensorflow-cpu  # Different for CPU only
 
 # Data Fetching & Analysis
 yfinance
