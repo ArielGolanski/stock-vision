@@ -214,7 +214,6 @@ function Accuracy() {
                 <th className="p-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Target</th>
                 <th className="p-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">MAE</th>
                 <th className="p-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">RMSE</th>
-                <th className="p-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">MAPE</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -224,7 +223,6 @@ function Accuracy() {
                   <td className="p-3 whitespace-nowrap text-sm text-gray-800 font-medium">{m.target}</td>
                   <td className="p-3 whitespace-nowrap text-sm text-gray-600">{m.MAE.toFixed(4)}</td>
                   <td className="p-3 whitespace-nowrap text-sm text-gray-600">{m.RMSE.toFixed(4)}</td>
-                  <td className="p-3 whitespace-nowrap text-sm text-gray-600">{m.MAPE.toFixed(2)} %</td>
                 </tr>
               ))}
             </tbody>
