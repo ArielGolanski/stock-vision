@@ -127,17 +127,22 @@ async function getStockMentions(ticker, timeframe = 'day') {
 function calculateHypeScore(mentions, positive, negative, posts) {
   if (mentions === 0) return 0;
 
-  // Factors
-  const mentionScore = Math.min((mentions / 50) * 30, 30); // Max 30 points
+  // Factors (Updated weights: Mention 30 -> 20, Trend 10 -> 20)
+  
+  // Mention Score: Max 20 points (down from 30)
+  const mentionScore = Math.min((mentions / 50) * 20, 20); // Max 20 points 
+  
+  // Sentiment Score: Max 40 points (no change)
   const sentimentScore = ((positive - negative) / mentions) * 40; // Max 40 points
   
-  // Engagement score based on upvotes and comments
+  // Engagement score based on upvotes and comments (no change)
   const avgEngagement = posts.slice(0, 10).reduce((sum, p) => sum + p.score + p.numComments, 0) / Math.min(posts.length, 10);
   const engagementScore = Math.min((avgEngagement / 100) * 20, 20); // Max 20 points
   
-  // Trend score (recent activity)
+  // Trend score (recent activity): Max 20 points (up from 10)
+  // Logic remains: Last 6 hours
   const recentPosts = posts.filter(p => Date.now() - p.created.getTime() < 6 * 60 * 60 * 1000); // Last 6 hours
-  const trendScore = Math.min((recentPosts.length / mentions) * 10, 10); // Max 10 points
+  const trendScore = Math.min((recentPosts.length / mentions) * 20, 20); // Max 20 points
 
   const total = mentionScore + sentimentScore + engagementScore + trendScore;
   return Math.max(0, Math.min(100, Math.round(total)));

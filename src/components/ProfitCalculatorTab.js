@@ -4,7 +4,7 @@ import { LoadingSpinner } from './LoadingComponents';
 import { useTheme } from './ThemeContext';
 
 
-export default function RiskCalculatorTab({
+export default function ProfitCalculatorTab({
     technicalInfo,
     predictions,
     investmentAmount,
@@ -120,7 +120,7 @@ export default function RiskCalculatorTab({
     return (
         <div style={{ padding: '20px', borderRadius: '8px', background: darkMode ? '#1e1e1e' : '#fff', border: `1px solid ${darkMode ? '#333' : '#e0e0e0'}` }}>
             <h3 style={{ margin: '0 0 15px 0', color: darkMode ? '#64b5f6' : '#00bcd4' }}>
-                Risk Calculator: Net Profit Forecast (Next 5 Days)
+                Profit Calculator: Net Profit Forecast (Next 5 Days)
             </h3>
 
             {(feesLoading || loading) ? (

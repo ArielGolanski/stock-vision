@@ -111,10 +111,10 @@ export default function HypeMeterTab({ hypeData, hypeLoading, hypeTimeframe, set
                     The Hype Score (0-100%) is calculated by aggregating data from top finance subreddits ({hypeData.timeframe} timeframe) based on four weighted factors:
                 </p>
                 <ul style={{ margin: '0', paddingLeft: '20px', fontSize: '13px', color: darkMode ? '#ccc' : '#444' }}>
-                    <li>Mention Score (Max 30%): Based on the sheer volume of posts mentioning the ticker.</li>
+                    <li>Mention Score (Max 20%): Based on the sheer volume of posts mentioning the ticker.</li>
                     <li>Sentiment Score (Max 40%): Calculated from the net positive vs. negative sentiment of all analyzed posts.</li>
                     <li>Engagement Score (Max 20%): Measures the average upvotes and comments on the top posts, indicating user interaction.</li>
-                    <li>Trend Score (Max 10%): Weighs posts from the last 6 hours more heavily to capture recent activity.</li>
+                    <li>Trend Score (Max 20%): Weighs posts from the last 6 hours more heavily to capture recent activity.</li>
                 </ul>
                 <h5 style={{ margin: '15px 0 5px 0', color: darkMode ? '#90caf9' : '#0097a7', fontSize: '13px' }}>
                     Details: Individual Post Sentiment Score
