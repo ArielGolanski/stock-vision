@@ -16,7 +16,7 @@ import { useTheme } from './ThemeContext';
 import { API_URL } from '../config'; 
 
 import ChartTab from './ChartTab';
-import RiskCalculatorTab from './RiskCalculatorTab'; 
+import ProfitCalculatorTab from './ProfitCalculatorTab'; 
 import NewsTab from './NewsTab';
 import OverviewTab from './OverviewTab';
 import HypeMeterTab from './HypeMeterTab';
@@ -443,7 +443,7 @@ export default function StocksDashboard() {
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
                     {['chart', 'news', 'overview', 'discussion', 'hype',  'risk'].map((tab) => (
                         <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '6px 12px', borderRadius: '6px', border: activeTab === tab ? '2px solid #2196f3' : `1px solid ${darkMode ? '#555' : '#ccc'}`, background: activeTab === tab ? '#2196f3' : 'transparent', color: activeTab === tab ? '#fff' : darkMode ? '#f1f1f1' : '#111', cursor: 'pointer' }}>
-                            {tab === 'hype' ? 'HypeMeter' : tab === 'risk' ? 'Risk Calculator' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {tab === 'hype' ? 'HypeMeter' : tab === 'risk' ? 'Profit Calculator' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
                     ))}
                 </div>
@@ -468,7 +468,7 @@ export default function StocksDashboard() {
                 )}
                 
                 {activeTab === 'risk' && (
-                    <RiskCalculatorTab
+                    <ProfitCalculatorTab
                         technicalInfo={technicalInfo}
                         predictions={predictions}
                         investmentAmount={investmentAmount}
