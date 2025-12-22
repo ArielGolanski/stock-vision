@@ -9,9 +9,9 @@ import {
     ChartSkeleton, 
     ListSkeleton 
 } from './LoadingComponents';
-import { periods } from './StocksDashboard'; // ייבוא רשימת התקופות מהקובץ הראשי
+import { periods } from './StocksDashboard'; 
 
-// פונקציה עזר להצגת לוגו (נשארת מחוץ לקומפוננטה הראשית)
+
 const getStockLogo = (symbol) => {
     try {
       return require(`../assets/${symbol.toLowerCase()}.png`);
