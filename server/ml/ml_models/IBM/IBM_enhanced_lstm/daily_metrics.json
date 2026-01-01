@@ -1462,5 +1462,29 @@
             "Monthly Change %"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "IBM",
+        "target": "Daily Change %",
+        "timestamp": "2026-01-01 01:18:00",
+        "MSE": 4.552354,
+        "RMSE": 2.133625,
+        "MAE": 1.648971,
+        "MAPE": 553.085453,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
     }
 ]
