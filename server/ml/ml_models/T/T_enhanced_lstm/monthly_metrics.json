@@ -1631,5 +1631,28 @@
             "Reddit Sentiment"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "T",
+        "target": "Monthly Change %",
+        "timestamp": "2026-01-11 01:18:48",
+        "MSE": 10.965959,
+        "RMSE": 3.311489,
+        "MAE": 2.706653,
+        "MAPE": 123.811228,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment"
+        ],
+        "training_len": 1988
     }
 ]
