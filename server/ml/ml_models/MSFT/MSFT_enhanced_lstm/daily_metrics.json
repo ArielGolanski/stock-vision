@@ -2206,5 +2206,29 @@
             "Monthly Change %"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "MSFT",
+        "target": "Daily Change %",
+        "timestamp": "2026-02-01 01:29:58",
+        "MSE": 1.983445,
+        "RMSE": 1.408348,
+        "MAE": 0.988589,
+        "MAPE": 119.531061,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
     }
 ]

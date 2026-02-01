@@ -2206,5 +2206,29 @@
             "Monthly Change %"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "AAPL",
+        "target": "Daily Change %",
+        "timestamp": "2026-02-01 01:32:08",
+        "MSE": 3.188401,
+        "RMSE": 1.785609,
+        "MAE": 1.191132,
+        "MAPE": 106.720369,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
     }
 ]
