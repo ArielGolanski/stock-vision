@@ -6162,5 +6162,28 @@
             "Reddit Sentiment"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "MSFT",
+        "target": "Monthly Change %",
+        "timestamp": "2026-07-28 01:49:35",
+        "MSE": 9.713344,
+        "RMSE": 3.116624,
+        "MAE": 2.241335,
+        "MAPE": 111.930525,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment"
+        ],
+        "training_len": 1988
     }
 ]
