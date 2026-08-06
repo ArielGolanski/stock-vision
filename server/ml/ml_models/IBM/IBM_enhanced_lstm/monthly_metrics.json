@@ -6369,5 +6369,28 @@
             "Reddit Sentiment"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "IBM",
+        "target": "Monthly Change %",
+        "timestamp": "2026-08-06 01:53:32",
+        "MSE": 18.974244,
+        "RMSE": 4.355943,
+        "MAE": 3.249647,
+        "MAPE": 159.530564,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment"
+        ],
+        "training_len": 1988
     }
 ]
