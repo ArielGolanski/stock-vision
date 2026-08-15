@@ -6576,5 +6576,28 @@
             "Reddit Sentiment"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "AAPL",
+        "target": "Monthly Change %",
+        "timestamp": "2026-08-15 00:49:22",
+        "MSE": 15.998379,
+        "RMSE": 3.999797,
+        "MAE": 3.003222,
+        "MAPE": 147.439892,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment"
+        ],
+        "training_len": 1988
     }
 ]
