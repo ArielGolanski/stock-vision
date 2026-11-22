@@ -9238,5 +9238,29 @@
             "Monthly Change %"
         ],
         "training_len": 1988
+    },
+    {
+        "ticker": "T",
+        "target": "Daily Change %",
+        "timestamp": "2026-11-22 04:14:46",
+        "MSE": 2.065859,
+        "RMSE": 1.437309,
+        "MAE": 1.087709,
+        "MAPE": 157.821668,
+        "model": "Enhanced LSTM",
+        "features": [
+            "Daily Change %",
+            "Volume Change %",
+            "High_Low_Pct",
+            "Open_Close_Pct",
+            "Volatility",
+            "MACD",
+            "MACD_Signal",
+            "MACD_Histogram",
+            "RSI",
+            "Reddit Sentiment",
+            "Monthly Change %"
+        ],
+        "training_len": 1988
     }
 ]
